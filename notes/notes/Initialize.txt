@@ -1,0 +1,44 @@
+1. ssh mcmoyer@myth.stanford.edu
+2. echo $TGREP2ABLE
+3. cd /afs/ir.stanford.edu/data/linguistic-data/Switchboard/
+4. cd 
+5. cd Switchboard/
+
+.....
+cd /afs/ir/data/linguistic-data/Treebank/tgrep2able/
+
+
+make sure this information is all there (should onld need to set up once)
+vim /.bash_login
+type a
+paste these in
+setenv TGREP2ABLE /afs/ir/data/linguistic-data/Treebank/tgrep2able/
+setenv TGREP2_CORPUS $TGREP2ABLE/swbd.t2c.gz
+setenv TDTlite /afs/ir/data/linguistic-data/TDTlite/
+setenv TDT_DATABASES /afs/ir/data/linguistic-data/TDTlite/databases
+setenv PATH /afs/ir/data/linguistic-data/TDTlite:$PATH
+export PATH="/afs/ir/data/linguistic-data/bin/linux_2_4/:$PATH"
+esc, then :wq, enter
+source .bash_login
+
+setenv TGREP2ABLE /afs/ir/data/linguistic-data/Treebank/tgrep2able/
+setenv TGREP2_CORPUS $TGREP2ABLE/swbd.t2c.gz
+export TDTlite="/afs/ir/data/linguistic-data/TDTlite/"
+export TDT_DATABASES /afs/ir/data/linguistic-data/TDTlite/databases
+export PATH="/afs/ir/data/linguistic-data/TDTlite:$PATH"
+export PATH="/afs/ir/data/linguistic-data/bin/linux_2_4/:$PATH"
+
+
+
+tgrep2 -afc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "/WP|WRB/ >> /SBARQ/ << /VP/ . /MD/"
+
+
+to look at the results:
+> less results/swbd.tab 
+
+to look at whether all the .ptn files are working
+> less data/swbd/<NAME.ptn> 
+
+
+to just create a new file:
+> vim ptn/StringVar/Wh.ptn

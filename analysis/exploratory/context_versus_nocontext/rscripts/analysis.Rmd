@@ -1,0 +1,181 @@
+---
+title: "Exploratory analysis of context: Regression Analysis"
+author: Morgan Moyer
+date: May 18, 2021
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE, echo=FALSE}
+library(ggplot2)
+library(lme4)
+library(lmerTest)
+library(multcomp) # not available for this version of R
+library(philentropy)
+library(stringr)
+library(textstem)
+library(tidyverse)
+theme_set(theme_bw())
+cbPalette <- c("#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73")
+this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(this.dir)
+```
+
+```{r read in all the data, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
+context_root = read.csv("../../../03_experiment/data/normed.csv") 
+context_root$Task <- "context"
+context_root$VerbLemma <- ""
+context_root = context_root[,!(names(context_root) %in% c("X"))]
+
+context_emb = read.csv("../../../04_experiment/data/normed.csv") 
+context_emb$Task <- "context"
+context_emb = context_emb[,!(names(context_emb) %in% c("X"))]
+
+
+nocontext_root = read.csv("../../../05_experiment/data/normed_nocontext_root.csv")
+nocontext_root$VerbLemma <- ""
+nocontext_root$Task <- "nocontext"
+nocontext_root = nocontext_root[,!(names(nocontext_root) %in% c("X"))]
+
+nocontext_emb = read.csv("../../../06_experiment/data/normed_nocontext_embedded.csv")
+nocontext_emb$Task <- "nocontext"
+nocontext_emb = nocontext_emb[,!(names(nocontext_emb) %in% c("X"))]
+```
+
+```{r join all the dfs together, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
+context <- full_join(context_root,context_emb)
+nocontext <- full_join(nocontext_root,nocontext_emb)
+d <- full_join(context, nocontext)
+
+# sanity check the join
+nrow(context_root) + nrow(context_emb) + nrow(nocontext_root) + nrow(nocontext_emb)
+nrow(d)
+```
+
+
+```{r}
+# Make everything into a factor
+d$Wh = as.factor(d$Wh)
+d$workerid = as.factor(d$workerid)
+d$tgrep_id = as.factor(d$tgrep_id)
+d$paraphrase = as.factor(d$paraphrase)
+d$ModalPresent = as.factor(d$ModalPresent)
+d$Task = as.factor(d$Task)
+```
+# Does cTask predict rating?
+
+```{r subset to ms/ma}
+d.ms.ma = d %>%
+  filter(paraphrase %in% c("a","every")) %>%
+  # hand-code paraphrase so mean-centering is more interpretatble 
+  # (otherwise, "every" will be 1 and "a" will be 0 by default)
+  mutate(paraphrase.dc = recode(paraphrase, "a" = 1, "every" = 0) ) %>%
+  mutate(cParaphrase = as.numeric(paraphrase.dc)-mean(as.numeric(paraphrase.dc))) %>%
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>%
+  mutate(cTask = as.numeric(Task) - mean(as.numeric(Task))) %>%
+  droplevels()
+```
+
+```{r set the reference levels for wh}
+# Set the reference levels
+contrasts(d.ms.ma$Wh) = cbind("how.vs.when"=c(0,1,0,0,0,0),"what.vs.when"=c(1,0,0,0,0,0),
+                "where.vs.when"=c(0,0,0,1,0,0),"who.vs.when"=c(0,0,0,0,1,0),
+                "why.vs.when"=c(0,0,0,0,0,1))
+```
+
+```{r}
+
+# m.ms.ma.full = lmer(normed_rating ~ cParaphrase*Wh*cModalPresent*cTask + (1+cParaphrase+Wh+cModalPresent|workerid) + (1+cParaphrase+cTask|tgrep_id), data=d.ms.ma)
+
+```
+
+
+
+# Split models up by paraphrase
+## A paraphrase
+
+```{r subset to a-paraphrase, include=FALSE, warning=FALSE, echo=FALSE}
+# Subset
+a_data <- d %>%
+  filter(paraphrase == "a") %>%
+  mutate(Task = as.factor(Task),
+         cModalPresent = as.numeric(ModalPresent) - mean(as.numeric(ModalPresent)),
+         cTask = as.numeric(Task) - mean(as.numeric(Task)))
+
+# Set contrasts
+# Wh Reference level = When
+contrasts(a_data$Wh) = cbind("how.vs.when"=c(0,1,0,0,0,0),"what.vs.when"=c(1,0,0,0,0,0),
+                "where.vs.when"=c(0,0,0,1,0,0),"who.vs.when"=c(0,0,0,0,1,0),
+                "why.vs.when"=c(0,0,0,0,0,1))
+```
+
+- There were no 3-way interactions, however there were significant 2-way interactions between Wh-Word and Task, and Wh-Word and Modality.
+- Wh x Modality:
+  - Significant positive intercept for Modality suggests that for the a-ratings for modal questions are higher than nonmodal question at the reference level
+  - Significant negative intercepts for all Wh-words suggest that a-ratings decrease for all wh-questions compared to the reference level.
+  - However, compared to the reference level when-questions, a-ratings are decreased even with Modal questions
+- Wh-Word and Task:
+  - there is no significant main effect of Task as a predictor of a-ratings, but 
+  - For all Wh-Words except
+```{r a-para model}
+# m.a = lmer(normed_rating ~ cModalPresent*Wh*cTask + (1+cModalPresent|workerid) + (1+cTask|tgrep_id), data=a_data,REML=FALSE)
+# saveRDS(m.a, "../models/model-contexts-a.rds")
+
+a.model <- readRDS("../models/model-contexts-a.rds")
+summary(a.model)
+```
+
+## Every paraphrase
+
+```{r subset to every-paraphrase, include=FALSE, warning=FALSE, echo=FALSE}
+# Subset
+every_data <- d %>%
+  filter(paraphrase == "every") %>%
+  mutate(Task = as.factor(Task),
+         cModalPresent = as.numeric(ModalPresent) - mean(as.numeric(ModalPresent)),
+         cTask = as.numeric(Task) - mean(as.numeric(Task)))
+
+# Set contrasts
+contrasts(every_data$Wh) = cbind("how.vs.when"=c(0,1,0,0,0,0),"what.vs.when"=c(1,0,0,0,0,0),
+                "where.vs.when"=c(0,0,0,1,0,0),"who.vs.when"=c(0,0,0,0,1,0),
+                "why.vs.when"=c(0,0,0,0,0,1))
+
+```
+
+- We found no significant interactions, except for a two-way interaction between Wh and Task only for who-questions.
+- There were significant effects of Wh-Word on the every-paraphrase only for who- and how-, where every-ratings incresased for those Wh compared to When
+```{r everyt-para model}
+# m.every = lmer(normed_rating ~ cModalPresent*Wh*cTask + (1+cModalPresent|workerid) + (1+cTask|tgrep_id), data=every_data,REML=FALSE)
+# saveRDS(m.every, "../models/model-contexts-every.rds")
+
+every.model <- readRDS("../models/model-contexts-every.rds")
+summary(every.model)
+```
+
+## The paraphrase
+
+```{r subset to the-paraphrase, include=FALSE, warning=FALSE, echo=FALSE}
+# Subset
+the_data <- d %>%
+  filter(paraphrase == "the") %>%
+  mutate(Task = as.factor(Task),
+         cModalPresent = as.numeric(ModalPresent) - mean(as.numeric(ModalPresent)),
+         cTask = as.numeric(Task) - mean(as.numeric(Task)))
+
+# Set contrasts
+contrasts(the_data$Wh) = cbind("how.vs.when"=c(0,1,0,0,0,0),"what.vs.when"=c(1,0,0,0,0,0),
+                "where.vs.when"=c(0,0,0,1,0,0),"who.vs.when"=c(0,0,0,0,1,0),
+                "why.vs.when"=c(0,0,0,0,0,1))
+
+```
+
+- We found significant two-way interactions only between ModalPresent and WH-Word
+```{r the-para model}
+# m.the = lmer(normed_rating ~ cModalPresent*Wh*cTask + (1+cModalPresent|workerid) + (1+cTask|tgrep_id), data=the_data,REML=FALSE)
+# saveRDS(m.the, "../models/model-contexts-the.rds")
+
+the.model <- readRDS("../models/model-contexts-the.rds")
+summary(the.model)
+
+```
+
+

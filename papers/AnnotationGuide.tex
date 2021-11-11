@@ -1,0 +1,283 @@
+% \begin{preamble}
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage{palatino}
+\usepackage{color}
+% \end{preamble}
+
+
+\definecolor{Purple}{RGB}{255,10,140}
+\newcommand{\jd}[1]{\textcolor{Purple}{[jd: #1]}}
+
+
+\begin{document}
+
+% Title
+\noindent \huge \textbf{Wh-Questions Tgrep2 Corpus Annotation Guide}\\
+
+\noindent \Large Morgan Moyer \hfill Version: \today
+% Endtitle 
+\normalsize
+
+\bigskip
+\hrule 
+\bigskip
+
+\section{Macros}
+
+\begin{enumerate}
+    \item \textbf{Disfluencies @ DISFL:}\\
+    /EDITED$|$UH$|$PRN$|$-UNF/
+    
+    \item \textbf{Wh-Node @ WH:}\\
+    /WP$|$WRB$|$WDT/ (The word-level wh-node)\\
+    !$<$ /$\string^$t$|\string^$T/ (that doesn't termininate in a \textsf{that}/\textsf{That})\\
+    !$>\!\!>$ @DISFL (isn't dominated by a disfluency)\\
+    $>\!\!>$ /$\string^$S/ (but is dominated by an S node)\\
+    !$>$ /$\string^$N$|\string^$A/ (isn't parented by any NPs or ADV/ADJPs)\\
+    $>\!\!>$ /$\string^$WH/
+\end{enumerate}
+
+
+\section{Categorical Variables}
+
+\begin{enumerate}
+    \item \textbf{WhPhraseType}: \\
+    Returns ``complex'' if @WH has a sister (e.g., \textsf{which children}); returns ``monomorphemic'' otherwise (e.g., \textsf{who}).
+        \begin{enumerate}  
+            \item Complex: \\
+            @WH [\$ /$\string^$N$|\string^$D$|\string^$J$|\string^$RB$|\string^$RP$|\string^$PP/
+            $|$ $>\!\!>$ (/$\string^$WH/ \$ /$\string^$AD$|\string^$JJ$|\string^$NP$|\string^$PP/)]
+
+            \item Monomorphemic: \\
+            @WH [!\$ /$\string^$N$|\string^$D$|\string^$J$|\string^$RB$|\string^$RP$|\string^$PP/
+            $|$ !$>\!\!>$ (/$\string^$WH/ \$ /$\string^$AD$|\string^$JJ$|\string^$NP$|\string^$PP/)]
+        \end{enumerate}
+
+    \item \textbf{ModalPresent}: \\
+    Returns ``yes'' if there is a modal auxiliary (\textsf{can}, \textsf{could}, \textsf{shall}, \textsf{should}, \textsf{may}, \textsf{might}, \textsf{must}) in the clause that is sister to the WH-phrase node that dominates the @WH (\textsf{where we can find coffee}); Returns ``no'' if there isn't any. 
+        \begin{enumerate}
+            \item Yes: \\
+            @WH $>\!\!>$ (/$\string^$WH/ $>\!\!>$ /$\string^$S/ \$ (/S$|$SQ/ $<\!\!<$ /MD/))
+            \item No: \\
+            @WH !$>\!\!>$ (/$\string^$WH/  $>\!\!>$ /$\string^$S/ \$ (/S$|$SQ/ $<\!\!<$ /MD/))
+        \end{enumerate}
+        
+    \item \textbf{HaveNeed}:\\
+    Returns 'yes' if there's a \textsf{have to} or \textsf{need to} construction. Returns 'no' otherwise.
+        \begin{enumerate}
+            \item Yes: \\
+            @WH $>\!\!>$ (/$\string^$WH/ \$ (/$\string^$S/ $<\!\!<$ (/$\string^$VP/ $<\!\!<$ /need$|$needs$|$needed$|$have$|$has$|$had$|$'ve$|$'d/) $<\!\!<$ /TO/ ))
+
+            \item No: \\
+            @WH !$>\!\!>$ (/$\string^$WH/ \$ (/$\string^$S/ $<\!\!<$ (/$\string^$VP/ $<\!\!<$ /need$|$needs$|$needed$|$have$|$has$|$had$|$'ve$|$'d/) $<\!\!<$ /TO/) )
+
+        \end{enumerate}
+    \item \textbf{Finite}\\
+    Returns ``finite'' if the question contains a tensed (=non-modal) verb (\textsf{where they found coffee}); returns ``infinite'' if the question contains an infinitival clause (\textsf{where to find coffee})
+        \begin{enumerate}
+            \item \textbf{Finite}: \\
+            @WH $>\!\!>$ (/$\string^$WH/ !\$ (/$\string^$S/ !\$ /$\string^$VB/ $<$ (/$\string^$NP/ $<$ /-NONE-/ \$. (/$\string^$VP/ $<$ /TO/))))
+            \item \textbf{Infinitival}: \\
+            @WH $>\!\!>$ (/$\string^$WH/ \$ (/$\string^$S/ !\$ /$\string^$VB/ $<$ (/$\string^$NP/ $<$ /-NONE-/ \$. (/$\string^$VP/ $<$ /TO/))))
+        \end{enumerate}
+    
+    \item \textbf{QuestionType}\\
+    Categorizes the kind of wh-question. We are mostly interested in Root (\textsf{Where can we find coffee?}) and Embedded (Dana knows where we can find coffee), and possibly Embedded Adjuncts. Embedded Adjuncts may look on the surface like Embedded Clauses, the difference only being whether the wh-clause is a complement to a verb or an adjunct. 
+
+    \item[] \textbf{\textsc{Critical QuestionTypes}}
+        \begin{enumerate}
+            \item \textbf{Root}\\
+            Wh-clauses that have interrogative illocutionary force (e.g., \textsf{Where can I find coffee?}). Are not complements to adjectives/verbs or children of Ns\\
+            @WH \\
+            $>\!\!>$ (/$\string^$SQ$|\string^$SBARQ/ [!\$ /$\string^$VB$|\string^$JJ$|\string^$BE$|\string^$RB/ $|$ !$>$ /$\string^$N/]) \\
+            !$>\!\!>$ /SBAR-NOM/
+
+            \item \textbf{Embedded}\\ 
+            Wh-clauses that are complements (sisters) to a verb (VB) or an adjective (JJ), OR that are embedded in PP which are complements of verbs or adjectives.
+
+            @WH $>\!\!>$ (/$\string^$SBAR/ [\$ /$\string^$VB$|\string^$JJ$|\string^$BE$|\string^$RB/] $|$ [$>$ /$\string^$PP/ \$ /$\string^$JJ$|\string^$VB$|\string^$BE$|\string^$RB/ ,, /$\string^$V/] \\
+            !$>$ /$\string^$NP/ !\$ /$\string^$NN/!= /SBAR-TMP$|$SBAR-LOC/)
+            \end{enumerate}
+        \item[] \textbf{\textsc{Non-Critical Question-Types}}\\
+        These are tags meant to weed out spurious root/embedded questions.
+
+        \begin{enumerate}
+            \item \textbf{Relative}\\
+            The Wh-clause modifies a noun. (\textsf{Dana saw the boy who ate Captain Crunsh}).\\
+            @WH \\
+            $>\!\!>$ (/$\string^$S/ [$>$ /$\string^$N/ $|$ $>$ (/$\string^$P/ $>$ /$\string^$N/)]) \\
+            !$>\!\!>$ (/$\string^$SBAR/ [\$ /$\string^$VB$|\string^$JJ$|\string^$BE$|\string^$RB/] $|$ [$>$ (/$\string^$PP/ \$ /$\string^$VB$|\string^$JJ$|\string^$BE$|\string^$RB/)])
+            % @WH >> (/^S/ [> /^N/ | > (/^P/ > /^N/)]) !>> (/^S/ [$ /^VB|^JJ|^BE|^RB/ | > (/^PP/ $ /^VB|^JJ|^BE|^RB/)])
+
+
+            \item \textbf{EmbAdjunct}\\
+            Wh-clauses that are not complements to a verb/adjective, but linearly follow the verb/adjective (i.e., that look like embedded clauses from a linear perspective).\\
+            @WH\\ 
+            $>\!\!>$ (/$\string^$SBAR/ \$ /$\string^$VP$|\string^$AD/ !\$ /$\string^$VB$|\string^$JJ$|\string^$BE$|\string^$RB/\\
+            {}[!$>$ (/$\string^$S/ $>$ /TOP/) $|$ !$>$ /TOP/] $|$ = /SBAR-TMP|SBAR-LOC/ )
+            % @WH >> (/^SBAR/ [?$ /^VP|^AD/] > /^VP|^AD/ !$ /^VB|^JJ|^BE|^RB/ [!> (/^S/ > /TOP/) | !> /TOP/] | = /SBAR-TMP|SBAR-LOC/ ) 
+            
+            
+            \item \textbf{Adjunct}\\ 
+            Wh-clauses that are neither complements of verbs/adjectives, nor the children of PPs that are complements of verbs/adjectives
+            @WH\\
+            {}[$>\!\!>$ (/$\string^$SBAR/ [$>$ (/$\string^$PP/ !\$ /$\string^$VB$|\string^$JJ$|\string^$BE$|\string^$RB/)] $|$ [!\$ /$\string^$VB$|\string^$JJ$|\string^$BE$|\string^$RB/]) $|$ $>\!\!>$ /SBAR-LOC|SBAR-TMP/]
+            % @WH [!>> (/^SBAR/ [> (/^PP/ \$ /^VB|^JJ|^BE|^RB/) | \$ /^VB|^JJ|^BE|^RB/]) | >> /SBAR-LOC|SBAR-TMP/]
+
+            \item \textbf{Subject}\\
+            Wh-clauses that are initial.\\
+             @WH \\
+            {}[ $>\!\!>$ /SBAR-SBJ/ $|$ $>\!\!>$ (/$\string^$S/=s1 $>\!\!>$ /TOP/ [!$>\!\!>$ (/$\string^$V/ $>\!\!>$ =t1) $|$ !,, (/$\string^$N/ $>\!\!>$ =t1)])]
+
+            \item \textbf{Fragment}\\
+            Wh-clauses that are fragments.\\
+             @WH \\
+            $>\!\!>$ (/$\string^$SBAR/ $>$ /FRAG/)
+            
+            \item \textbf{Exclam} \\
+            Wh-clauses that are exclamatives (don't have a verb), e.g., \textsf{what a meal!}\\
+            @WH\\ 
+            $>\!\!>$ (/$\string^$S/ !$<\!\!<$ /$\string^$V/) \\
+            !$>\!\!>$ /$\string^$SBAR-NOM/
+        \end{enumerate}
+   
+    \item \textbf{DegreeQ}\\
+    Returns `yes' if the wh-clause is a degree-question (\textsf{how many cups of salt do we need?}); returns `no' otherwise.
+        \begin{enumerate}
+            \item Yes: @WH \$ /$\string^$JJ$|\string^$RB/
+            \item No: @WH !\$ /$\string^$JJ$|\string^$RB/
+        \end{enumerate}
+    \item \textbf{WhAll}\\
+    Returns `yes' if the wh-phrase contains an \textsf{all}; returns `no' otherwise.
+        \begin{enumerate}
+            \item Yes: @WH $>\!\!>$ (/$\string^$WH/ $<\!\!<$ (/$\string^$NP/ $<$ (/$\string^$DT/ $<$ /all/) !$<$ /$\string^$N/))
+        \end{enumerate}
+    \item \textbf{SubjectAux}\\
+    Returns `yes' if the wh-clause contains subject-aux-inversion.
+        \begin{enumerate}
+            \item Yes: @WH $>\!\!>$ (/$\string^$SBAR/ $<\!\!<$ /$\string^$SQ/)
+        \end{enumerate}
+    \item \textbf{Determiner Subject}
+        \begin{enumerate}
+            \item Yes: \\
+            @WH $>\!\!>$ (/$\string^$WH/ \$ (/$\string^$S/ $<\!\!<$ (/$\string^$NP-SBJ/ $<\!\!<$ /DT/)))
+            \item No: \\
+            @WH $>\!\!>$ (/$\string^$WH/ \$ (/$\string^$S/ $<\!\!<$ (/$\string^$NP-SBJ/ !$<\!\!<$ /DT/)))
+        \end{enumerate}
+    \item \textbf{DeterminerNonSubject}:
+        \begin{enumerate}
+            \item Yes: \\
+            @WH $>\!\!>$ (/$\string^$WH/ \$ (/$\string^$S/ $<\!\!<$ (/$\string^$NP/ $<\!\!<$ /DT/ $>\!\!>$ /$\string^$VP/)))
+
+            \item No: \\
+            @WH $>\!\!>$ (/$\string^$WH/ \$ (/$\string^$S/ $<\!\!<$ (/$\string^$NP/ !$<\!\!<$ /DT/ $>\!\!>$ /$\string^$VP/)))
+        \end{enumerate}
+    \item \textbf{IdentityQ}:\\
+    \begin{enumerate}
+        \item YEs:\\
+        @WH $>\!\!>$ (/$\string^$WH/ \$ (/$\string^$S/=s1 $<\!\!<$ (/'s$|$'m$|$'re$|$am$|$is$|$are$|$was$|$were/=vb1 !.. (/$\string^$VB$|\string^$JJ$|\string^$RB/ $>\!\!>$ =s1 !$<$ =vb1) !.. /$\string^$PP/)))
+        \item No:\\
+        @WH !$>\!\!>$ (/$\string^$WH/ \$ (/$\string^$S/=s1 $<\!\!<$ (/'s$|$'m$|$'re$|$am$|$is$|$are$|$was$|$were/=vb1 !.. (/$\string^$VB$|\string^$JJ$|\string^$RB/ $>\!\!>$ =s1 !$<$ =vb1) !.. /$\string^$PP/)))
+    \item \textbf{MatrixNegPresent}
+    \begin{enumerate}
+        \item Yes:\\
+        @WH $>\!\!>$ (/$\string^$WH/ > (/$\string^$SBAR/ [\$ /$\string^$VB$|\string^$BE$|\string^$JJ$|\string^$RB//=vb $|$ \\
+        $>$ (/$\string^$PP/=pp \$ /$\string^$VB$|\string^$BE$|\string^$JJ$|\string^$RB/)] !$>$ /$\string^$NP/ !\$ /$\string^$NN/ $>\!\!>$ (/$\string^$VP/ $<\!\!<$ /not$|$n't/ [$<\!\!<$ =vb $|$ $<\!\!<$ =pp]) ))
+        \item No:\\
+        @WH !$>\!\!>$ (/$\string^$WH/ > (/$\string^$SBAR/ [\$ /$\string^$VB$|\string^$BE$|\string^$JJ$|\string^$RB//=vb $|$ \\
+        $>$ (/$\string^$PP/=pp \$ /$\string^$VB$|\string^$BE$|\string^$JJ$|\string^$RB/)] !$>$ /$\string^$NP/ !\$ /$\string^$NN/ $>\!\!>$ (/$\string^$VP/ $<\!\!<$ /not$|$n't/ [$<\!\!<$ =vb $|$ $<\!\!<$ =pp]) ))
+    \end{enumerate}
+    
+    \item \textbf{EmbeddedNegPresent}
+    \begin{enumerate}
+        \item Yes:\\
+        @WH $>\!\!>$ (/$\string^$WH/ \$ (/$\string^$S/ $<\!\!<$ (/$\string^$VB$|\string^$BE/ !, /$\string^$VB$|\string^$BE/ \$ (/$\string^$RB/ $<$ /not$|$n't/))))
+
+        \item No:\\
+        @WH !$>\!\!>$ (/$\string^$WH/ \$ (/$\string^$S/ $<\!\!<$ (/$\string^$VB$|\string^$BE/ !, /$\string^$VB$|\string^$BE/ \$ (/$\string^$RB/ $<$ /not$|$n't/))))
+    \end{enumerate}
+    \end{enumerate}
+    
+\end{enumerate}
+
+\section{String Variables}
+\begin{enumerate}
+    \item \textbf{MatrixNegation}: Print matrix negation. \\
+    @WH $>\!\!>$ (/$\string^$WH/ $>$ (/$\string^$SBAR/ [\$ /$\string^$VB$|\string^$BE$|\string^$JJ$|\string^$RB//=vb $|$ \\
+    $>$ (/$\string^$PP/=pp \$ /$\string^$VB$|\string^$BE$|\string^$JJ$|\string^$RB/)] !$>$ /$\string^$NP/ !\$ /$\string^$NN/ $>\!\!>$ (/$\string^$VP/ $<\!\!<$ /not$|$n't/=print [$<\!\!<$ =vb $|$ $<\!\!<$ =pp]) ))
+    % @WH >> (/^WH/ > (/^SBAR/ [$ /^VB|^JJ|^BE|^RB/=vb | > (/^PP/=pp $ /^JJ|^VB|^BE|^RB/)] !> /^NP/ !$ /^NN/ >> (/^VP/ << /not|n't/=print [<< =vb | << =pp]) ))
+
+    
+    \item \textbf{MatrixPred1}: Print all the matrix predicates who have the wh-clause as complement.\\
+    @WH $>\!\!>$ (/$\string^$WH/ $>\!\!>$ /$\string^$S/=s1 $>\!\!>$ (/$\string^$S/=s2 \$ (/$\string^$VB$|\string^$BE$|\string^$JJ$|\string^$RB/=print !,, (/$\string^$VB$|\string^$BE/ $>\!\!>$ =s1 \$ /$\string^$NP-SBJ/) ,, (/$\string^$NP-SBJ/ $>\!\!>$ =s1 )) $>\!\!>$ =s1))
+    \color{red}
+    FIX?
+    % @WH >> (/^WH/ >> /^S/=s1 >> (/^S/=s2 $ (/^VB|^BE|^JJ|^RB/=print !,, (/^VB|^BE/ >> =s1 $ /^NP-SBJ/) ,, (/^NP-SBJ/ >> =s1 )) >> =s1))
+    \color{black}
+
+    \item \textbf{MatrixPred2}: Print all the second matrix predicates.\\
+    @WH $>\!\!>$ (/$\string^$WH/ $>\!\!>$ /$\string^$S/=s1 $>\!\!>$ (/$\string^$S/=s2 \$ (/$\string^$VB$|\string^$BE$|\string^$JJ$|\string^$RB/=print ,, (/$\string^$VB$|\string^$BE/ $>\!\!>$ =s1 \$ /$\string^$NP-SBJ/=np1) ,, (=np1 $>\!\!>$ =s1)) $>\!\!>$ =s1))
+
+
+    \item \textbf{MatVerbPart}: Print the matrix predicates who have wh-clause as complement to PP (e.g., \textsf{surprised by}, \textsf{agree on}, \textsf{depend on}).\\
+    @WH $>\!\!>$ (/$\string^$WH/ $>\!\!>$ /$\string^$S/=s1 $>\!\!>$ (/$\string^$S/=s2 $>$ (/$\string^$PP/ \$ /$\string^$VB$|\string^$BE$|\string^$JJ$|\string^$RB/=print)))
+
+
+    \item \textbf{Wh}: Print the wh-word terminal node.\\
+    @WH $<$ /$\string^$w$|\string^$h/=print
+
+    \item \textbf{Modal}: Print any modals following the @WH node.\\
+    @WH $>\!\!>$ (/$\string^$WH/ $>\!\!>$ /$\string^$S/ \$ (/S$|$SQ/ $<\!\!<$ /MD/=print))
+    
+    \item \textbf{HaveNeed}: Print any \textsf{have to} / \textsf{need to} modal constructions
+    @WH $>\!\!>$ (/$\string^$WH/ \$ (/$\string^$S/ $<\!\!<$ (/$\string^$VP/ $<\!\!<$ /need$|$needs$|$needed$|$have$|$has$|$had$|$'ve$|$'d/=print) $<\!\!<$ /TO/ ))
+    
+    \item \textbf{EmbeddedNegation}: Print negation in the wh-clause. \\
+    @WH $>\!\!>$ (/$\string^$WH/ \$ (/$\string^$S/ $<\!\!<$ (/$\string^$VB$|\string^$BE/ !, /$\string^$VB$|\string^$BE/ \$ (/$\string^$RB/ $<$ /not$|$n't/=print))))
+    % @WH >> (/^WH/ $ (/^S/ << (/^VB|^BE/ !, /^VB|^BE/ $ (/^RB/ < /not|n't/=print))))
+
+    \item \textbf{Verb1}: Print the first verb in the wh-clause. \\
+    @WH $>\!\!>$ (/$\string^$WH/ \$ (/$\string^$S/ $<\!\!<$ (/$|\string^$VB$|\string^$BE/=print !, /$\string^$VB$|\string^$BE/)))
+
+    \item \textbf{Verb2}: Print the second verb/predicate in the wh-clause.\\
+    @WH $>\!\!>$ (/$\string^$WH/ \$ (/$\string^$S/=s1 $<\!\!<$ (/$\string^$VB$|\string^$JJ$|\string^$BE/=print ,, (/$\string^$VB$|\string^$BE/ $>\!\!>$ =s1) )))
+
+    \item \textbf{Verb3}: Print the third verb/predicate in the wh-clause.\\
+    @WH $>\!\!>$ (/$\string^$WH/ \$ (/$\string^$S/=s1 $<\!\!<$ (/$\string^$VB$|\string^$JJ$|\string^$BE/=print ,, (/$\string^$VB$|\string^$JJ$|\string^$BE/ ,, (/$\string^$VB$|\string^$BE/ $>\!\!>$ =s1)))))
+
+    
+    \item \textbf{DeterminerSubject}: Print any Subj-NP with determiners.\\
+    @WH $>\!\!>$ (/$\string^$WH/ \$ (/$\string^$S/ $<\!\!<$ (/$\string^$NP-SBJ/=print $<\!\!<$ /DT/))
+    
+    \item \textbf{DeterminerNonSubject}: Print any NPs in the predicate with determiners.\\
+    @WH $>\!\!>$ (/$\string^$WH/ \$ (/$\string^$S/ $<\!\!<$ (/$\string^$NP/=print $<\!\!<$ /DT/ $>\!\!>$ /$\string^$VP/))
+
+    \item \textbf{FullWhPhrase}: Print the full WH-Phrase.\\
+    @WH $>\!\!>$ (/$\string^$WH/=print \$ /S$|$SQ/ $>\!\!>$ /$\string^$S/ $>\!\!>$ /$\string^$N$|\string^$J$|\string^$RB$|\string^$PP$|\string^$A/)
+
+    \item \textbf{WhParse}: Print the Wh-phrase with POS.
+    /WP|WRB|WDT/=print !$<$ /$\string^$t|$\string^$T/
+
+    \item \textbf{Sentence}: Print the full sentence in which the @WH node appears.\\
+    @WH $>\!\!>$ ($\ast$=print !$>$ $\ast$)
+
+    \item \textbf{Question}: Print the full wh-clause.\\
+    @WH $>\!\!>$ /$\string^$S/=print
+
+    \item \textbf{QuantifiedPredicate}: Print any quantifiers in the wh-clause predicate.\\
+    @WH \\
+    $>\!\!>$ (/$\string^$WH/ $>$ (/$\string^$S/ $<\!\!<$ (/$\string^$VP/\\
+    $<\!\!<$ /all$|$every$|$some$|$one$|$any$|$most$|$least$|$more$|$most$|$much/=print)))
+
+    \item \textbf{QuantifiedSubject}: Print any quantifiers in the wh-clause subject.\\
+    @WH \\
+    $>\!\!>$ (/$\string^$WH/ $>$ (/$\string^$S/ $<\!\!<$ (/$\string^$NP-SBJ/\\
+    $<\!\!<$ /all$|$every$|$some$|$one$|$any$|$most$|$least$|$more$|$most$|$much/=print)))
+
+\end{enumerate}
+
+
+
+\end{document}

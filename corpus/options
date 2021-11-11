@@ -1,0 +1,49 @@
+data=/afs/.ir.stanford.edu/users/m/c/mcmoyer/projects/whquestions-tgrep2/corpus/data/
+results=/afs/.ir.stanford.edu/users/m/c/mcmoyer/projects/whquestions-tgrep2/corpus/results/
+
+init ID
+
+add StringVar Sentence
+add CategoricalVar HaveNeedTo=yes:HaveNeed,no:NotHaveNeed
+add CategoricalVar Finite=no:Infinite,yes:Finite
+add CategoricalVar ModalPresent=yes:Modal,no:NotModal
+add CategoricalVar QuestionType=subject:QuestionSubject,adjunct:QuestionAdjunct,embadjunct:EmbAdjunct,exclamation:ExclamQ,root:RootQ,embedded:EmbQ,relative:RelClause,fragment:FragmentQ,cleft:Cleft
+add CategoricalVar EmbeddedSQ=yes:EmbeddedSQ
+add CategoricalVar DegreeQ=yes:DegQ,no:NotDegQ
+add CategoricalVar SubjectAuxInv=yes:SubjectAux
+add CategoricalVar WhAll=yes:WhAll
+add CategoricalVar WhAdvP=yes:WhAdvP
+add CategoricalVar MatrixNegPresent=yes:MatrixNegPresent
+add CategoricalVar EmbeddedNegPresent=yes:EmbeddedNegPresent
+add CategoricalVar SbarNomPresent=yes:SbarNom
+add StringVar QuantifiedSubject
+add StringVar QuantifiedPredicate
+add StringVar Wh
+add StringVar MatrixSubject
+add StringVar MatrixNegation
+add StringVar InvertedAuxVerb
+add StringVar MatrixPredAux
+add StringVar MatrixPredVerb
+add StringVar MatrixPredOther
+add StringVar MatrixPredParticle
+add StringVar MatrixPred2
+add StringVar Modal
+add StringVar EmbeddedSubject
+add StringVar EmbeddedNegation
+add StringVar Verb1
+add StringVar Verb2
+add StringVar Verb3
+add StringVar DeterminerSubject
+add StringVar DeterminerNonSubject
+add StringVar FullWhPhrase
+add StringVar JustMatrixClause
+add CategoricalVar DeterminerSubjPresent=yes:DeterminerSubject,no:NotDeterminerSubject
+add CategoricalVar DeterminerNonSubjPresent=yes:DeterminerNonSubject,no:NotDeterminerNonSubject
+add NodeVar WhNode
+add ParseVar WhParse
+add StringVar Question
+add ParseVar SentenceParse
+add CategoricalVar WhPhaseType=complex:ComplexWh,monomorphemic:MonoWh
+add CategoricalVar IdentityQ=yes:IdentityQ,no:NotIdentityQ
+# add StringVar PreviousContext=10-b
+# add StringVar FollowingContext=10-a

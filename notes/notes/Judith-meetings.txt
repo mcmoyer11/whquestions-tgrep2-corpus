@@ -1,0 +1,128 @@
+Judith meeting 8/5
+
+check about email at stanford
+
+health insurance
+
+
+grad course on adaptation
+HAI
+
+sign up for alps lab mailing list
+alps lab core lis (remind judith)
+
+
+cognition and language workship
+every thursday afternoon
+cog sci seminar
+
+see if noah is teaching prop models of cognition
+
+
+
+______________________________
+
+LING 278: potts programming for linguists
+weds 1130-1250
+
+
+LING 247: seminar in psycholinguistics
+mon/weds 10-1120
+
+
+****psych 290: NLP & text-based machine learning in the social sciences
+eichstaedt, J.
+tu/th 230-350
+
+PSYCH 293: explanation
+gerstenberg and icard
+tu/th 1030-1150
+
+
+
+NJ cobra plan 
+609 292 7524
+
+
+following up with regina and cc judith
+
+switchboard
+
+how many instances of the constructions are we dealing wtih 
+how 
+
+Where can i find coffee?
+
+where did i find coffee?
+where are the places that i found coffe?
+where are some 
+
+we need many cases, and then ideally we would be able to take thesentence
+and tu
+
+how much information 
+
+paraphrase task?
+target: alex ate some of the cookies
+similarity rating
+
+
+piloting for what is the best way for asking the question
+
+
+
+write to the corpus TA to get acces to the corpus
+https://linguistics.stanford.edu/resources/corpora/accessing-corpora
+
+
+SUNet ID needed
+
+from commant line:
+> ssh mcmoyer@myth.stanford.edu
+
+
+>echo $TGREP2ABLE
+(path to all the tgrep 2 able corpora)
+sw. ....
+
+>tgrep2-afc $TR.......
+
+figure out the question tags....SQ
+
+>... "where >> /SQ/"
+"looking for a where with an ancestor that's an SQ node"
+
+
+look at the WHERE to see what they are tagged as 
+
+
+
+SbarQ
+
+
+"where . /MD/ >> /SBARQ/"
+
+"/WP|WRB/ . /MD/ >> /SBARQ/"
+
+who / what = WP
+where = WRB
+
+
+
+save using the tdt 
+
+macros to specify the patterns
+and options to do things with the output
+
+
+make a list of the cues as a googledoc
+set up a git hub repository and invite judith
+
+
+Meeting 9/8
+Do the same thing with tgrep2 
+
+
+
+
+

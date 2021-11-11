@@ -1,0 +1,1 @@
+@WH >> (/^WH/ > (/^SBAR/=s1 [$ /^VB|^JJ|^BE|^RB/=va | > (/^PP/ $ /^JJ|^VB|^BE|^RB/=vb)] !> /^NP/ !$ /^NN/ ,, (/am|'m|is|'s|are|was|were|'re|do|have|'ve|has|had|can|could|shall|should|will|'ll|would|may|might|must/=print [.. =va | .. =vb]) >> /SBARQ|SQ/ ))  

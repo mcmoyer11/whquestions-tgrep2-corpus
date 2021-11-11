@@ -1,0 +1,1 @@
+@WH [!>> (/^SBAR/ [> (/^PP/ $ /^VB|^JJ|^BE|^RB/) | $ /^VB|^JJ|^BE|^RB/]) | >> /SBAR-LOC|SBAR-TMP/]

@@ -1,0 +1,1037 @@
+---
+title: "Pre-processing Data from Embedded Questions Corpus Study"
+author: Morgan Moyer
+date: March 22, 2021
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE, echo=FALSE}
+library(ggplot2)
+library(lme4)
+library(lmerTest)
+library(multcomp) # not available for this version of R
+library(stringr)
+library(textstem)
+library(tidyverse)
+theme_set(theme_bw())
+cbPalette <- c("#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73")
+this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(this.dir)
+source("../../helpers.R")
+```
+
+# Read in data
+```{r import data}
+# Read database
+corp = read.table("../../../corpus/results/swbd.tab",sep="\t",header=T,quote="")
+# Read experimental data in
+d = read.csv("../data/exp04_main-merged.csv")
+nrow(d) # 174549
+```
+
+## Combine with database
+```{r combine raw data with corpus file}
+# rename item_id from corpus file
+names(corp)[names(corp) == "Item_ID"] <- "tgrep_id"
+
+# filter from the database the tgrep_ids from the raw data
+corp_match = corp %>%
+  filter(tgrep_id %in% d$tgrep_id)
+
+# join dfs together
+d <- left_join(d, corp_match, by="tgrep_id")
+# assign the negative values 0
+d$rating[d$rating < 0] = 0
+nrow(d) # 174549
+```
+
+```{r take a look at the raw distribution, include = FALSE}
+ggplot(d, aes(x=rating)) +
+  geom_histogram()
+
+summary(d) # this doesn't show any negative rating values....
+tail(d)
+```
+
+
+# Native speakers
+## We exclude any speakers who did not report English as a native language in the post-survey demographic questions.
+```{r Filter out non-native English speakers, warning = FALSE}
+nrow(d) # 174549
+length(unique(d$workerid)) # 1073
+#filter out participants who did not report English as native language
+d <- d %>%
+  mutate(language = tolower(subject_information.language)) %>%
+  filter(., grepl("eng", language))
+
+# 25 participants removed for reporting non-english native language
+nrow(d) #170068
+length(unique(d$workerid)) # 1048
+```
+
+```{r comments and demographic information, eval=FALSE, include=FALSE}
+d$time_in_minutes = as.numeric(as.character(d$time_in_minutes))
+d$rating = as.numeric(d$rating)
+
+# look at comments
+unique(d$subject_information.comments)
+
+# fair price
+ggplot(d, aes(x=subject_information.fairprice)) +
+  geom_histogram(stat="count")
+
+# overall assessment
+ggplot(d, aes(x=subject_information.enjoyment)) +
+  geom_histogram(stat="count")
+
+# gender
+ggplot(d, aes(x=subject_information.gender)) +
+  geom_histogram(stat="count")
+
+# education
+ggplot(d, aes(x=subject_information.education)) +
+  geom_histogram(stat="count")
+
+# time_in_minutes
+ggplot(d, aes(x=time_in_minutes)) +
+  geom_histogram(stat="count")
+mean(d$time_in_minutes)
+```
+
+```{r Look at practice trials, include = FALSE}
+practice = d %>%
+  filter(tgrep_id %in% c("example1", "example2", "example3", "example4"))
+
+agr = practice %>%
+  group_by(tgrep_id, paraphrase) %>%
+  summarize(mean_rating = mean(rating), CILow = ci.low(rating), CIHigh = ci.high(rating)) %>%
+  mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
+  drop_na()
+
+labels = c("Who can help spread the word?","Where can I get coffee around here?","Who came to the party?","How do I get to Central Park?")
+names(labels) = c("example1","example2","example3", "example4")
+
+ggplot(agr,aes(x=paraphrase, y=mean_rating, fill=paraphrase)) +
+  geom_bar(position="dodge",stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position="dodge") +
+  facet_wrap(~tgrep_id,labeller = labeller(tgrep_id = labels))
+# ggsave("../graphs/main_practice_total.pdf")
+# theme(axis.text.x = element_text(angle = 90))
+```
+
+```{r TODO: look at first response on practice trials only, eval=FALSE, include=FALSE}
+prac_agr = practice %>%
+  group_by(workerid,tgrep_id,paraphrase,rating) %>%
+  summarise(count = n()) %>%
+  group_by(workerid,tgrep_id) %>%
+  mutate(total_per_ex = sum(count))
+nrow(prac_agr) # 19566
+
+prac_agr_rem = practice %>%
+  group_by(workerid,tgrep_id,paraphrase,rating) %>%
+  summarise(count = n()) %>%
+  group_by(workerid,tgrep_id) %>%
+  mutate(total_per_ex = sum(count)) %>%
+  filter(total_per_ex > 4)
+  # write.csv(.,"practice_to_edit.csv")
+nrow(prac_agr_rem) # 2014
+
+# fixed = read.csv("practice_edited.csv",header=TRUE)
+nrow(fixed) # 68
+head(fixed)
+# remove that one column
+# fixed = fixed[c(2:7)]
+
+head(fixed)
+prac_agr_keep = practice %>%
+  group_by(workerid,tgrep_id,paraphrase,rating) %>%
+  summarise(count = n()) %>%
+  group_by(workerid,tgrep_id) %>%
+  mutate(total_per_ex = sum(count)) %>%
+  filter(total_per_ex <= 4)
+nrow(prac_agr_keep) # 4088
+
+practice_first = rbind(fixed,prac_agr_keep)
+nrow(practice_first) #320
+```
+
+# Look at control trials
+```{r}
+controls = d %>%
+  filter((grepl("control",tgrep_id)) & (rating >= 0))
+
+# read in the file to have access to the items
+cntrls = read.csv("../../../experiments/clean_corpus/controls.csv",header=TRUE,quote="")
+
+# rename the item column in order to merge on it
+names(cntrls)[names(cntrls) == "TGrepID"] <- "tgrep_id"
+
+# join dfs together
+c <- left_join(controls, cntrls, by="tgrep_id")
+```
+
+## Graph control trials
+```{r, eval=FALSE, include=FALSE}
+agr = c %>%
+  group_by(EntireSentence,paraphrase) %>%
+  summarize(mean_rating = mean(rating), CILow = ci.low(rating), CIHigh = ci.high(rating)) %>%
+  mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
+  drop_na()
+
+ggplot(agr,aes(x=paraphrase, y=mean_rating, fill=paraphrase)) +
+  geom_bar(position="dodge",stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position="dodge") +
+  facet_wrap(~EntireSentence, labeller = labeller(Sentence = label_wrap_gen(1)))
+# ggsave("../graphs/main_controls.pdf")
+```
+
+# Remove subjects who failed 2/6 controls
+```{r}
+# for each control trial type, create a binary measure of whether the
+# trial was passed
+t = c %>%
+  separate(tgrep_id,into=c("tgrep_id","para","trial"),sep="[_]") %>%
+  group_by(workerid,paraphrase,trial) %>%
+  filter(trial %in% c("movie", "book"), paraphrase %in% c("the")) %>%
+  mutate(control_passed = ifelse(rating > .5,"1","0"))
+# nrow(t) #2028
+a1 = c %>%
+  separate(tgrep_id,into=c("tgrep_id","para","trial"),sep="_") %>%
+  group_by(workerid,paraphrase,trial) %>%
+  filter(trial %in% c("novels", "cookies"), paraphrase %in% c("all")) %>%
+  mutate(control_passed = ifelse(rating > .5,"1","0"))
+# nrow(a1) #2028
+a2 = c %>%
+  separate(tgrep_id,into=c("tgrep_id","para","trial"),sep="_") %>%
+  group_by(workerid,paraphrase,trial) %>% 
+  filter(trial %in% c("tissue", "napkin"), paraphrase %in% c("a")) %>%
+  mutate(control_passed = ifelse(rating > .5,"1","0"))
+# nrow(a2) #2028
+
+# combine all those files together
+con = rbind(t,a1,a2)
+# nrow(con) #3936
+
+# filter out participants who failed more than 2 controls by taking the sum of 
+# all the passed controls, and filtering out workerids who passed more than 2
+failed_controls = con %>%
+  filter(control_passed == "1") %>%
+  group_by(workerid, control_passed) %>%
+  summarise(sum_control_passed = n()) %>%
+  filter(sum_control_passed < 4)
+
+# How many removed using this criterion
+length(unique(failed_controls$workerid)) # 37
+length(unique(failed_controls$workerid))/length(unique(d$workerid))*100 # 3.5%
+
+```
+# Look at raw test items
+```{r}
+test = d %>%
+  # Remove participants who fail 2/6 controls
+  filter(!workerid %in% c(failed_controls$workerid)) %>%
+  # Remove non-test items
+  filter(!tgrep_id %in% c("example1", "example2", "example3", "example4","bot_check")) %>%
+  filter(!grepl("control",tgrep_id)) %>%
+  # Make a single matrix verb column
+  unite("MatrixVerb", c("MatrixPredVerb", "MatrixPredOther", "MatrixPredParticle"), na.rm = TRUE, sep = " ", remove = FALSE) %>%
+  # Remove leading and trailing whitespace
+  mutate(MatrixVerb = str_trim(MatrixVerb))
+
+# replace the empty values in MatrixVerb with the value for Aux verb column
+test$MatrixVerb = ifelse(test$MatrixVerb=="",test$MatrixPredAux,test$MatrixVerb)
+
+# Lemmatize the MatrixVerb column
+test$VerbLemma = lemmatize_words(test$MatrixVerb)
+
+# rename all to every
+test$paraphrase[test$paraphrase == "all"] = "every"
+
+# Assign 0 to NaN
+test[is.na(test)] <- 0
+nrow(test) # 113632
+```
+
+
+## Recoding 
+* 15 cases where MatrixVerbs weren't printed with TDTLite
+* Modals
+* QuestionType
+```{r}
+# 61188:30 --> funny 
+test$MatrixVerb[test$tgrep_id == "61188:30"] = "funny"
+test$VerbLemma[test$tgrep_id == "61188:30"] = "funny"
+test$MatrixPredVerb[test$tgrep_id == "61188:30"] = "funny"
+
+# 4959:7 -- > astonishing
+test$MatrixVerb[test$tgrep_id == "4959:7"] = "astonishing"
+test$VerbLemma[test$tgrep_id == "4959:7"] = "astonish"
+
+# 99380:19
+test$MatrixVerb[test$tgrep_id == "99380:19"] = "close"
+test$VerbLemma[test$tgrep_id == "99380:19"] = "close"
+test$MatrixPredParticle[test$tgrep_id == "99380:19"] = "close"
+
+	
+# 123739:91
+test$MatrixVerb[test$tgrep_id == "99380:19"] = "closer"
+test$VerbLemma[test$tgrep_id == "99380:19"] = "close"
+test$MatrixPredParticle[test$tgrep_id == "99380:19"] = "close"
+
+
+# 105054:19
+test$MatrixVerb[test$tgrep_id == "105054:19"] = "enough"
+test$VerbLemma[test$tgrep_id == "105054:19"] = "enough"
+test$MatrixPredParticle[test$tgrep_id == "105054:19"] = "enough"
+
+# 147760:69 --> matter of
+test$MatrixVerb[test$tgrep_id == "147760:69"] = "matter"
+test$VerbLemma[test$tgrep_id == "147760:69"] = "matter"
+test$MatrixPredParticle[test$tgrep_id == "147760:69"] = "matter"
+
+	
+# 33547:68
+test$MatrixVerb[test$tgrep_id == "33547:68"] = "near"
+test$VerbLemma[test$tgrep_id == "33547:68"] = "near"
+test$MatrixPredOther[test$tgrep_id == "33547:68"] = "near"
+
+# 34493:13 --> no verb
+	
+# 84861:52 --> away from
+test$MatrixVerb[test$tgrep_id == "84861:52"] = "away"
+test$VerbLemma[test$tgrep_id == "84861:52"] = "away"
+test$MatrixPredParticle[test$tgrep_id == "84861:52"] = "away"
+
+# 63673:21 --> near
+test$MatrixVerb[test$tgrep_id == "63673:21"] = "near"
+test$VerbLemma[test$tgrep_id == "63673:21"] = "near"
+
+
+# 126691:17 --> not
+test$MatrixVerb[test$tgrep_id == "126691:17"] = "not"
+test$VerbLemma[test$tgrep_id == "126691:17"] = "not"
+test$MatrixPredOther[test$tgrep_id == "126691:17"] = "not"
+
+# 148174:24 --> is
+test$MatrixVerb[test$tgrep_id == "148174:24"] = "is"
+test$VerbLemma[test$tgrep_id == "148174:24"] = "be"
+test$MatrixPredAux[test$tgrep_id == "148174:24"] = "is"
+
+# 63769:100 --> enough
+test$MatrixVerb[test$tgrep_id == "63769:100"] = "enough"
+test$VerbLemma[test$tgrep_id == "63769:100"] = "enough"
+test$MatrixPredParticle[test$tgrep_id == "63769:100"] = "enough"
+
+
+# Recode nonfinite clauses as ModalPresent for graphs
+test$ModalPresent[test$Finite == "no"] = "yes"
+test$Modal[test$Finite == "no"] = "nonfinite"
+# Recode contracted Modals
+test$Modal[test$Modal == "ca"] = "can"
+test$Modal[test$Modal == "'ll"] = "will"
+test$Modal[test$Modal == "'d"] = "could"
+
+test[is.na(test$EmbeddedSQ)] <- "no"
+test$QuestionType = as.factor(test$QuestionType)
+
+test$EmbeddedSQ = as.character(test$EmbeddedSQ)
+test$QuestionType = as.character(test$QuestionType)
+test$QuestionType[test$EmbeddedSQ == "yes"] <- "embeddedSAI"
+test$EmbeddedSQ = as.factor(test$EmbeddedSQ)
+test$QuestionType = as.factor(test$QuestionType)
+
+table(test$QuestionType)
+length(unique(test$workerid))
+length(unique(test$workerid[test$QuestionType!="embeddedSAI"])) 
+```
+
+## Graph raw test items
+```{r, eval=FALSE, include=FALSE}
+agr = test %>%
+  group_by(paraphrase) %>%
+  summarize(mean_rating = mean(rating), CILow = ci.low(rating), CIHigh = ci.high(rating)) %>%
+  mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
+  drop_na()
+
+ggplot(agr,aes(x=paraphrase, y=mean_rating, fill=paraphrase)) +
+  geom_bar(position="dodge",stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position="dodge", show.legend = FALSE) +
+  # ggtitle("Overall mean rating for each paraphrase") +
+  xlab("Paraphrase") +
+  ylab("Mean rating") +
+  theme(legend.position = "none") +
+  scale_fill_manual(values=cbPalette) +
+  scale_color_manual(values=cbPalette)
+# ggsave("../graphs/test_everything.pdf")
+
+length(unique(test$MatrixVerb)) # 175 verbs
+
+agr = test %>%
+  group_by(Wh,ModalPresent,paraphrase) %>%
+  summarize(mean_rating = mean(rating), CILow = ci.low(rating), CIHigh = ci.high(rating)) %>%
+  mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
+  drop_na()
+
+ggplot(agr,aes(x=paraphrase, y=mean_rating, fill=ModalPresent)) +
+  geom_bar(position="dodge",stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=position_dodge(0.9)) +
+  facet_wrap(~Wh) +
+  scale_fill_manual(values=cbPalette) +
+  scale_color_manual(values=cbPalette)
+```
+
+## Remove rhetorical questions
+```{r}
+test_agr = test %>%
+  group_by(tgrep_id, paraphrase) %>%
+  summarize(mean_rating = mean(rating))
+
+other_ratings = test %>%
+  group_by(tgrep_id, Sentence, paraphrase) %>%
+  summarize(mean_rating = mean(rating)) %>%
+  filter((mean_rating[paraphrase == "other"] > mean_rating[paraphrase=="a"]) & 
+           (mean_rating[paraphrase == "other"] > mean_rating[paraphrase=="every"]) & 
+           (mean_rating[paraphrase == "other"] > mean_rating[paraphrase=="the"]))
+
+View(other_ratings)
+
+# How much data removed
+nrow(other_ratings)/nrow(test_agr)*100 # 15.5%
+nrow(test_agr) # 4052
+
+or_ids = other_ratings$tgrep_id
+test_other = test %>%
+  filter(tgrep_id %in% or_ids)
+nrow(test_other)/nrow(test)*100 # 15.5
+
+test_other %>%
+  filter(paraphrase == "other") %>%
+  group_by(Sentence, paraphrase) %>%
+  summarize(mean_rating = mean(rating))  # %>%
+  View()
+  
+
+# filter out those bad boys
+test_norm = test %>%
+  filter(!tgrep_id %in% or_ids)
+
+nrow(test_norm)/nrow(test)*100 # 84%
+
+nrow(test_norm) # 95956
+
+# write.csv(test_norm,"../data/embedded_no_rhetorical.csv")
+```
+
+# Looing at QuestionType
+## Look at SAI and Particle Verbs in Rhetorical Qs
+```{r, include = FALSE}
+length(unique(test_other$Sentence)) # 159 items
+
+# Rhetorical questions with embedded SAI
+test_removed_sq = test_other %>%
+  filter(EmbeddedSQ == "yes")
+length(unique(test_removed_sq$Sentence)) # 12 items
+nrow(test_removed_sq)/nrow(test_other)*100 # 7.5%
+
+ggplot(test_removed_sq, aes(x=VerbLemma)) +
+  geom_histogram(stat="count") +
+  theme(axis.text.x = element_text(angle = 90))
+
+# Rhetorical questions with verbs particles
+test_removed_pp = test_other %>%
+  filter(MatrixPredParticle != "")
+length(unique(test_removed_pp$Sentence)) # 29 items
+nrow(test_removed_pp)/nrow(test_other)*100 #18%
+```
+
+## Look at SAI and Particle Verbs in Test Qs
+```{r, include = FALSE}
+# In the test data, look at embedded SAI
+sq = test_norm %>%
+  filter(EmbeddedSQ == "yes")
+
+length(unique(sq$Sentence)) # 58 items
+nrow(sq)/nrow(test_norm)*100 # 6.9%
+
+# In the test data, look at verbs with Particles
+pp = test_norm %>%
+  filter(MatrixPredParticle != "")
+length(unique(pp$Sentence)) # 49 items
+nrow(pp)/nrow(test_norm)*100 # 5.7%
+
+# Historgram of verbs
+ggplot(sq, aes(x=VerbLemma)) +
+  geom_histogram(stat="count") +
+  theme(axis.text.x = element_text(angle = 90))
+
+View(unique(pp[,c("tgrep_id","Sentence","VerbLemma","Question")]))
+View(unique(test_norm[,c("tgrep_id","Sentence","Question")]))
+table(test_norm$EmbeddedSQ, test_norm$Wh)
+```
+
+## Look at questions in test data without embedded SAI
+
+```{r, include = FALSE}
+# In the test data questions without embedded SAI
+no_sq = test_norm %>%
+  filter(EmbeddedSQ != "yes")
+
+nrow(no_sq)/nrow(test_norm)*100 #93%
+View(unique(no_sq[,c("tgrep_id","Sentence","Question")]))
+
+no_pp = test_norm %>%
+  filter(MatrixPredParticle == "")
+nrow(no_pp)/nrow(test_norm)*100 #94%
+
+# take a look individual questions based on matrix verb frequency
+t = no_sq %>%
+  select(tgrep_id,VerbLemma,Sentence, Question) %>%
+  group_by(VerbLemma) %>%
+  mutate(count = n()) %>%
+  filter(VerbLemma == "know") %>%
+  unique() %>%
+  View()
+
+test_norm %>%
+  filter(tgrep_id == "173250:33") %>%
+  group_by(Sentence,Question,paraphrase) %>%
+  summarize(mean_rating = mean(rating), sd = sd(rating)) %>%
+  View()
+  
+# CASES THAT SEEM LIKE NOT REAL EMBEDDINGS
+# 171379:158 --> based on what they see *t*-5
+# but people who *t*-4 d-, don't have day in and day out life long experience with what prison is really like *t*-1 and what the options are *t*-2, * to ask them *-3 to decide for one case, on one person, based on what they see *t*-5, i think 0 that is maybe, uh, a little bit naive.
+	
+# 31019:97 --> reshot where they could
+# and they just change the title and, uh, and reshot a few parts, you know, where they, yeah, you know, where they could *?* *t*-1.
+
+# 
+# XXXX
+# 37675:66 coming to a point soon when....
+# i, you know, i think that there's coming to a point *ich*-1 real soon when ticket prices are going *-2 to be to the point where the average fan can't go *t*-3 *t*-4
+# 
+# 177034:133 --> witnessed what we did
+# 
+# uh, and th-, and the problems that, that *t*-3 has come that *t*-4 has come from this decision that that jury came to *t*-1 after all of us witnessed what we did *t*-2 with the video tape beating. uh just makes you wonder i guess whether or not they,
+# 
+# XXXX
+# 56988:40 
+# in fact, it *exp*-2 was even pretty much spelled *-1 out who you did vote for *t*-3, up until fairly recently
+# 
+# XXXXXX
+# 57547:40 
+# i tried *-1 to remember *ich*-3 as i took stuff off where it went *t*-2,
+# 
+# ???
+# 80505:155 --> precise about how you do it 
+#   because if you, uh, use drop cloths *-5 to cover everything and you use masking tape *-6 to trim out, uh, all the parts that you don't want *-1 to slop over onto *t*-2, you don't have *-3 to be quite as precise about how you do it *t*-4
+# 
+#   XXXX
+#   160971:117
+#   i mean, i just read something that, two thirds or three quarters, i'm not exactly sure of our national debt are, was created *-1 during the reagan bush *ich*-3 era who *t*-2 are suppo-, supposedly fiscally conservative.
+
+
+the_high = no_sq %>%
+  filter((paraphrase == "the")) %>% #  & (Wh == "why")
+  group_by(tgrep_id,Sentence,VerbLemma,Question) %>%
+  summarize(mean_rating = mean(rating), sd = sd(rating)) %>%
+  filter(mean_rating > .5) %>%
+  View()
+
+
+# 94825:83
+# and when he started, uh, at skyline high school t-2, i asked him, son, when, uh, you know, where do i go -1 to sign up for the p t a t-3?
+# 	
+# 56723:24
+# im trying 1 to think what they call t-2 their soup.
+
+
+a_high = no_sq %>%
+  filter((paraphrase == "a") & (VerbLemma == "know")) %>% 
+  group_by(tgrep_id,Sentence,VerbLemma,Question) %>%
+  summarize(mean_rating = mean(rating), sd = sd(rating)) %>%
+  filter(mean_rating > .3) %>%
+  View()
+
+
+	
+# 29177:41
+# and, uh, i talked to a thirteen year old *ich*-2 last night who *t*-1's, uh, goes to, uh, one of the plano high schools or junior highs, i guess,
+# 	
+# 34493:13
+# so, if and when we ever get a baby-sitter *t*-1, like we did with silence of the lambs, we go *-2 see it.
+# 	
+# 109916:100
+# and, uh, i just, it *exp*-4's just weird that i was just talking to somebody *ich*-3 this morning who *t*-1's, who *t*-2's a working, uh, lady, a working mom,
+# 
+# 90258:41
+# she has a, a child *ich*-2 in connecticut who *t*-1 is extremely gifted,
+# 16096:37
+# well, it says, why would you, what you would have *t*-1 for a dinner party.
+# 85372:42
+# um, there are some areas *ich*-2 though where, where they have a problem with, uh, the houses kind of sinking a little bit into the, to the, uh *t*-1,
+# 170922:29
+# and the money *ich*-3 is also another issue. how you're going *-1 to pay for it *t*-2.
+# 83586:41
+# and then i gave it to a guy *ich*-3 *-4 to repair who *t*-1 works for the aut-, for the audi dealer
+# 79010:88
+# but recently, uh, the refuse department has, has, uh, is working on *-1 getting a system *ich*-3 going where we will actually have, uh, a bend that we put things in *t*-2 for * recycling these other things *t*-4
+# ??31019:97
+# and they just change the title and, uh, and reshot a few parts, you know, where they, yeah, you know, where they could *?* *t*-1.
+
+
+
+all_high = no_sq %>%
+  filter(paraphrase %in% c("every")) %>% #  & (Wh == "when") & (ModalPresent == "yes")
+  group_by(tgrep_id,Sentence,VerbLemma,Question) %>%
+  summarize(mean_rating = mean(rating), sd = sd(rating)) %>%
+  filter(mean_rating > .5) %>%
+  View()
+
+# 66692:37 --> careful
+# i have got *-1 to be so much more careful with what i do *t*-2.
+# 
+# 61922:110
+# and and it puts me right up-to-date what i'm, what i have *-1 to do *t*-2, what i have *-3 to ship *t*-4, what i should be expecting *t*-5 to be returned *-7.
+
+
+other_high = no_sq %>%
+  filter(paraphrase %in% c("other")) %>%
+  group_by(tgrep_id,Sentence,VerbLemma,Question) %>%
+  summarize(mean_rating = mean(rating), sd = sd(rating)) %>%
+  # filter(mean_rating > .5) %>%
+  View()
+
+
+part = no_sq %>%
+  filter(MatrixPredParticle != "")
+# What % of non-SAI Qs still have Particles?
+nrow(part)/nrow(no_sq)*100 # 5%
+
+
+no_pp_no_SAI = test_norm %>%
+  filter((MatrixPredParticle == "") & (EmbeddedSQ != "yes"))
+# What % of all test Qs are NOT SAI OR Particle?
+nrow(no_pp_no_SAI)/nrow(test_norm)*100 # 88%
+
+View(unique(no_pp_no_SAI[,c("VerbLemma","Question","Sentence")]))
+
+
+
+
+
+```
+
+## Graph Embedded Subject-Aux Inversion
+```{r, include = FALSE}
+agr = test_norm %>%
+  group_by(EmbeddedSQ,paraphrase) %>%
+  summarize(mean_rating = mean(rating), CILow = ci.low(rating), CIHigh = ci.high(rating)) %>%
+  mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
+  drop_na()
+
+ggplot(agr,aes(x=paraphrase, y=mean_rating, alpha=EmbeddedSQ, fill=paraphrase)) +
+  geom_bar(position="dodge",stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=position_dodge(0.9)) +
+  # facet_grid(EmbeddedSQ~Wh) +
+  xlab("Paraphrase") +
+  ylab("Mean rating") +
+  guides(fill=FALSE) +
+  guides(alpha=guide_legend(title="Embedded SAI")) +
+  theme(legend.key.size = unit(0.3, "cm"),
+        legend.position = "top", # c(.5,1)
+        legend.direction = "horizontal",
+        legend.margin=margin(0,0,0,0),
+        legend.box.margin=margin(0,0,-5,-5),legend.spacing.y = unit(0.001, 'cm')) +
+    scale_fill_manual(values=cbPalette) +
+    scale_color_manual(values=cbPalette) +
+    scale_alpha_discrete(range = c(.5,1))
+ggsave("../graphs/overall_SAI.pdf",width=3,height=3)
+# ggsave("../graphs/modxwh_SAI.pdf",width=8,height=3)
+
+
+agr = sq %>%
+  group_by(paraphrase) %>%
+  summarize(mean_rating = mean(rating), CILow = ci.low(rating), CIHigh = ci.high(rating)) %>%
+  mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
+  drop_na()
+
+dodge = position_dodge(.9)
+ggplot(agr,aes(x=paraphrase, y=mean_rating, fill=paraphrase)) +
+  geom_bar(position=dodge,stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=dodge, show.legend = FALSE) +
+  ggtitle("overall ratings for SAI in test qs") +
+  xlab("Paraphrase") +
+  ylab("Mean rating") +
+  ylim(0,.6) +
+  theme(legend.position = "none") +
+  scale_fill_manual(values=cbPalette) +
+  scale_color_manual(values=cbPalette)
+
+
+agr = sq %>%
+  group_by(Wh,ModalPresent,paraphrase) %>%
+  summarize(mean_rating = mean(rating), CILow = ci.low(rating), CIHigh = ci.high(rating)) %>%
+  mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
+  drop_na()
+
+# Re-Order the WH-levels by overall composition of DB
+agr$Wh <- factor(agr$Wh, levels=c("what","how","where","why","who","when"))
+
+ggplot(agr,aes(x=paraphrase, y=mean_rating, alpha=ModalPresent, fill=paraphrase)) +
+  geom_bar(position="dodge",stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=position_dodge(0.9)) +
+  facet_wrap(~Wh, ncol=2) +
+  xlab("Paraphrase") +
+  ylab("Mean rating") +
+  ggtitle("overall ratings for SAI in test qs") +
+  guides(fill=FALSE) +
+  guides(alpha=guide_legend(title="Modal present")) +
+  theme(legend.key.size = unit(0.3, "cm"),
+        legend.position = "top", # c(.5,1)
+        legend.direction = "horizontal",
+        legend.margin=margin(0,0,0,0),
+        legend.box.margin=margin(0,0,-5,-5),legend.spacing.y = unit(0.001, 'cm')) +
+    scale_fill_manual(values=cbPalette) +
+    scale_color_manual(values=cbPalette) +
+    scale_alpha_discrete(range = c(.5,1))
+
+
+test_norm_noSQ = test_norm %>%
+  filter(EmbeddedSQ != "yes") %>%
+  group_by(VerbLemma, tgrep_id,Sentence,paraphrase) %>%
+  summarize(count = n(),mean_rating = mean(rating))
+View(test_norm_noSQ)
+
+```
+
+# Look at Matrix Verbs
+```{r, eval=FALSE, include=FALSE}
+verb_count = test %>%
+  group_by(VerbLemma) %>%
+  summarize(count = n())
+View(verb_count)
+
+# take a look at the cases without a verb
+no_verb = test %>%
+  filter(VerbLemma == "")
+
+test %>%
+  filter(VerbLemma == "") %>%
+  group_by(tgrep_id) %>%
+  summarize(count = n()) %>%
+  View()
+
+View(no_verb)
+length(unique(no_verb$tgrep_id)) #15 items without verb
+View(unique(no_verb[,c("tgrep_id","Sentence","Question")]))
+# rename 
+
+```
+
+# Focusing just on "Every", "a" and "the"
+## Normalize ratings to make a probability distribution
+  
+```{r }
+# remove 'other' ratings
+# critical with embeddedSQ = 71967
+# critical withOUT embeddedSQ = 66963
+critical = test_norm %>%
+  filter(paraphrase %in% c("every","a","the"))
+  # filter((MatrixPredParticle == "") & (EmbeddedSQ != "yes"))
+# nrow(critical)
+# View(critical)
+# unique by-item/by-participant combo
+critical$ids = paste(critical$workerid,critical$tgrep_id)
+
+critical$ModalPresent = as.factor(critical$ModalPresent)
+critical$Wh = as.factor(critical$Wh)
+critical$MatrixVerb = as.factor(critical$MatrixVerb)
+critical$paraphrase = as.factor(critical$paraphrase)
+
+# Determine for each observation (by-participant by-item), get the sum of the 
+# 3 ratings
+cr = critical %>%
+  # select(ids,rating) %>%
+  group_by(ids) %>%
+  summarize(rating_sum = sum(rating))
+
+# Join the dfs together
+critical = critical %>%
+  left_join(cr, by="ids")
+
+# For each of the three paraphrase ratings, divide by sum of ratings for that item
+critical$factors = paste(critical$ids,critical$paraphrase)
+normed_agr = critical %>%
+  group_by(factors) %>%
+  summarise(normed_rating = rating/rating_sum) %>%
+  drop_na() # this removes ALOT of rows
+
+# Merge the dfs together
+normed = merge(normed_agr,critical,by='factors')
+normed[is.na(normed$ModalPresent)] <- "no"
+
+# FIND OUT:
+# are there particular items that show bimodality between "other" and another para?
+
+# FIND OUT:
+# by-participant variability using KL divergence from the mean
+
+nrow(normed) # 64911
+names(normed)
+
+# subset the data to just the relevant columns so that we don't encounter \
+# a large file storage problem on GitHub
+normed <- normed[,c("workerid","tgrep_id","Sentence","paraphrase","ModalPresent","normed_rating","QuestionType","Finite","Modal","Wh","VerbLemma")]
+
+# save to .csv to load into analysis script
+# write.csv(normed,"../data/normed.csv")
+
+
+```
+
+## Graph normed data Overall
+```{r}
+agr = normed %>%
+  group_by(paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating), CILow = ci.low(normed_rating), CIHigh = ci.high(normed_rating)) %>%
+  mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
+  drop_na()
+
+
+dodge = position_dodge(.9)
+ggplot(agr,aes(x=paraphrase, y=mean_rating, fill=paraphrase)) +
+  geom_bar(position=dodge,stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=dodge, show.legend = FALSE) +
+  # ggtitle("Mean rating for 'a' vs. 'every'") +
+  xlab("Paraphrase") +
+  ylab("Mean rating") +
+  ylim(0,.6) +
+  theme(legend.position = "none") +
+  scale_fill_manual(values=cbPalette) +
+  scale_color_manual(values=cbPalette)
+ggsave("../graphs/overall_noSQ.pdf",width=2,height=2)
+```
+
+## Graph Interaction between Modal and Wh
+```{r}
+
+agr = normed %>%
+  group_by(Wh,ModalPresent,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating), CILow = ci.low(normed_rating), CIHigh = ci.high(normed_rating)) %>%
+  mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
+  drop_na()
+
+# Re-Order the WH-levels by overall composition of DB
+agr$Wh <- factor(agr$Wh, levels=c("what","how","where","why","who","when"))
+
+ggplot(agr,aes(x=paraphrase, y=mean_rating, alpha=ModalPresent, fill=paraphrase)) +
+  geom_bar(position="dodge",stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=position_dodge(0.9)) +
+  facet_wrap(~Wh, ncol=2) +
+  xlab("Paraphrase") +
+  ylab("Mean rating") +
+  guides(fill=FALSE) +
+  guides(alpha=guide_legend(title="Modal present")) +
+  theme(legend.key.size = unit(0.3, "cm"),
+        legend.position = "top", # c(.5,1)
+        legend.direction = "horizontal",
+        legend.margin=margin(0,0,0,0),
+        legend.box.margin=margin(0,0,-5,-5),legend.spacing.y = unit(0.001, 'cm')) +
+    scale_fill_manual(values=cbPalette) +
+    scale_color_manual(values=cbPalette) +
+    scale_alpha_discrete(range = c(.5,1))
+
+# ggsave("../graphs/modxwh_noSQ.pdf",width=3,height=4)
+```
+
+## Look at just Wh
+```{r}
+agr = normed %>%
+  group_by(paraphrase,Wh) %>%
+  summarize(mean_rating = mean(rating), CILow = ci.low(rating), CIHigh = ci.high(rating)) %>%
+  mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
+  drop_na()
+# Re-Order the WH-levels by overall composition of DB
+agr$Wh <- factor(agr$Wh, levels=c("what","how","where","why","who","when"))
+ggplot(agr,aes(x=Wh, y=mean_rating, fill=paraphrase)) +
+  geom_bar(position="dodge",stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax), width=.25,position=position_dodge(0.9))  +
+  # ggtitle("Mean rating for Wh-Word") +
+  xlab("Wh-Word") +
+  ylab("Mean rating") +
+  theme(legend.title = element_blank()) +
+  theme(legend.key.size = unit(0.3, "cm"),
+        legend.position = "top", # c(.5,1)
+        legend.direction = "horizontal") +
+  scale_fill_manual(values=cbPalette) +
+  scale_color_manual(values=cbPalette)
+# ggsave("../graphs/final_normed_wh.pdf")
+```
+
+## Look at just ModalPresent
+```{r}
+agr = normed %>%
+  group_by(paraphrase,ModalPresent) %>%
+  summarize(mean_rating = mean(normed_rating), CILow = ci.low(normed_rating), CIHigh = ci.high(normed_rating)) %>%
+  mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
+  drop_na()
+
+ggplot(agr,aes(x=ModalPresent, y=mean_rating, fill=paraphrase)) +
+  geom_bar(position="dodge",stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax), width=.25,position=position_dodge(0.9)) +
+  xlab("Modal Present") +
+  ylab("Mean rating") +
+  theme(legend.title = element_blank()) +
+  theme(legend.key.size = unit(0.3, "cm"),
+        legend.position = "top", # c(.5,1)
+        legend.direction = "horizontal") +
+  scale_fill_manual(values=cbPalette) +
+  scale_color_manual(values=cbPalette)
+# legend.spacing.y = unit(-10, 'cm'))
+# guides(fill=guide_legend(title="Paraphrase"))
+# ggsave("../graphs/final_normed_modalpresent.pdf")
+
+```
+
+## Graph MatrixVerb only
+```{r}
+verb_count = normed %>%
+  group_by(VerbLemma) %>%
+  summarize(count = n())
+
+View(verb_count)
+nrow(verb_count) # 92 verbs
+
+surp = subset(normed,normed$VerbLemma == "surprise")
+nrow(surp)
+agr = normed %>%
+  # Most frequent
+  filter(VerbLemma %in% c("know","see","wonder","understand","be","understand","surprise","tell","figure","say","think","sure","learn","remember")) %>%
+  group_by(paraphrase,VerbLemma,ModalPresent) %>%
+  summarize(mean_rating = mean(normed_rating), CILow = ci.low(normed_rating), CIHigh = ci.high(normed_rating)) %>%
+  mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
+  drop_na()
+
+
+ggplot(agr,aes(x=paraphrase, y=mean_rating, alpha=ModalPresent, fill=paraphrase)) +
+  geom_bar(position="dodge",stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=position_dodge(0.9)) +
+  facet_wrap(~VerbLemma) +
+  xlab("Paraphrase") +
+  ylab("Mean rating") +
+  guides(fill=FALSE) +
+  guides(alpha=guide_legend(title="Modal present")) +
+  theme(legend.key.size = unit(0.3, "cm"),
+        legend.position = "top", # c(.5,1)
+        legend.direction = "horizontal",
+        legend.margin=margin(0,0,0,0),
+        legend.box.margin=margin(0,0,-5,-5),legend.spacing.y = unit(0.001, 'cm')) +
+    scale_fill_manual(values=cbPalette) +
+    scale_color_manual(values=cbPalette) +
+    scale_alpha_discrete(range = c(.5,1))
+
+# ggsave("../graphs/matrixverbs_threotical.pdf",width=10,height=10)
+```
+
+# Graph individual verbs
+```{r }
+agr = normed %>%
+  filter(VerbLemma == "know") %>%
+  group_by(Wh,ModalPresent,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating), CILow = ci.low(normed_rating), CIHigh = ci.high(normed_rating)) %>%
+  mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
+  drop_na()
+
+# Re-Order the WH-levels by overall composition of DB
+agr$Wh <- factor(agr$Wh, levels=c("what","how","where","why","who","when"))
+
+ggplot(agr,aes(x=paraphrase, y=mean_rating, alpha=ModalPresent, fill=paraphrase)) +
+  geom_bar(position="dodge",stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=position_dodge(0.9)) +
+  facet_wrap(~Wh,ncol=2) +
+  xlab("Paraphrase") +
+  ylab("Mean rating") +
+  guides(fill=FALSE) +
+  guides(alpha=guide_legend(title="Modal present")) +
+  ggtitle("Know") + 
+  theme(legend.key.size = unit(0.3, "cm"),
+        legend.position = "top", # c(.5,1)
+        legend.direction = "horizontal",
+        legend.margin=margin(0,0,0,0),
+        legend.box.margin=margin(0,0,-5,-5),legend.spacing.y = unit(0.001, 'cm')) +
+    scale_fill_manual(values=cbPalette) +
+    scale_color_manual(values=cbPalette) +
+    scale_alpha_discrete(range = c(.5,1))
+
+# ggsave("../graphs/modwh_know.pdf",width=3,height=4)
+```
+
+```{r Look at individual modals}
+agr = normed %>%   
+  filter(ModalPresent %in% c("yes")) %>%
+  group_by(Modal,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating), CILow = ci.low(normed_rating), CIHigh = ci.high(normed_rating)) %>%
+  mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh)
+
+ggplot(agr, aes(x=paraphrase,y=mean_rating,fill=paraphrase)) +
+  geom_bar(stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax), width=.25,position=position_dodge(0.9)) +
+  facet_wrap(~Modal,ncol=3) +
+  theme(legend.title = element_blank()) +
+  theme(legend.key.size = unit(0.3, "cm"),
+        legend.position = "top", # c(.5,1)
+        legend.direction = "horizontal") +
+  scale_fill_manual(values=cbPalette) +
+  scale_color_manual(values=cbPalette)
+# ggsave("../graphs/modals.pdf",,width=4,height=5)
+```
+
+
+```{r Looking at individual items}
+the_high = normed %>%
+  filter((paraphrase == "the")) %>% #  & (Wh == "why")
+  group_by(tgrep_id,Sentence) %>%
+  summarize(mean_rating = mean(normed_rating), sd = sd(normed_rating)) %>%
+  filter(mean_rating > .5) %>%
+  View()
+
+a_high = normed %>%
+  filter((paraphrase == "a")) %>% #
+  group_by(tgrep_id,Sentence, Question) %>%
+  summarize(mean_rating = mean(normed_rating), sd = sd(normed_rating)) %>%
+  # filter(mean_rating > .3) %>%
+  View()
+
+all_high = normed %>%
+  filter(paraphrase %in% c("every")) %>% 
+  group_by(tgrep_id,Sentence) %>%
+  summarize(mean_rating = mean(normed_rating), sd = sd(normed_rating)) %>%
+  filter(mean_rating > .1) %>%
+  View()
+
+
+# Look at all ratings for a specific example
+ex = test %>%
+  filter(tgrep_id == "29177:41") %>%
+  select(Sentence,Question,paraphrase,rating) %>%
+  group_by(Sentence,Question,paraphrase) %>%
+  summarize(mean_rating = mean(rating), sd = sd(rating)) %>%
+  View()  
+
+ex = normed %>%
+  filter(tgrep_id == "2512:34") %>%
+  group_by(Sentence,Question,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating), sd = sd(normed_rating)) %>%
+  View()
+
+
+ex = test %>%
+  filter(tgrep_id == "39551:19")
+View(ex[,c("SentenceParse")])
+```
+(TOP (S (CC and) 
+        (NP-SBJ-2 (PRP I)) 
+        (VP (VBP have) 
+            (VP (VBN been) 
+                (VP (VBG debating) (SBAR (WHNP-1 (WP what)) (S (NP-SBJ (-NONE- *-2)) (VP (TO to) (VP (VB cook) (NP (-NONE- *T*-1)))))) (SBAR-PRP (IN because) (S (NP-SBJ (NP (CD one)) (PP (IN of) (NP (PRP$ my) (NNS guests)))) (VP (VBZ is) (NP-PRD (DT a) (NN vegetarian)))))))) (. .) (-DFL- E_S)))

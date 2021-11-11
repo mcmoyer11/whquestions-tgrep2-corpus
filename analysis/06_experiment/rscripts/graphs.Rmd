@@ -1,0 +1,308 @@
+---
+title: "Graphs for Experiment 06, Embedded Questions NoContext Corpus Study"
+author: Morgan Moyer
+date: May 18, 2021
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE, echo=FALSE}
+library(ggplot2)
+library(lme4)
+library(lmerTest)
+library(multcomp) # not available for this version of R
+library(stringr)
+library(textstem)
+library(tidyverse)
+theme_set(theme_bw())
+cbPalette <- c("#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73")
+this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(this.dir)
+source("../../helpers.R")
+```
+
+
+```{r import data}
+# Read database
+corp = read.table("../../../corpus/results/swbd.tab",sep="\t",header=T,quote="")
+# Read experimental data in
+d = read.csv("../data/normed_nocontext_embedded.csv")
+
+# rename item_id from corpus file
+names(corp)[names(corp) == "Item_ID"] <- "tgrep_id"
+
+# filter from the database the tgrep_ids from the raw data
+corp_match = corp %>%
+  filter(tgrep_id %in% d$tgrep_id)
+
+# join dfs together
+d <- left_join(d, corp_match, by="tgrep_id")
+```
+
+# Density plots
+```{r}
+agr = d %>%
+  group_by(tgrep_id,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating),sd = sd(normed_rating))
+```
+
+
+## Mean Rating
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+# look at differences in mean_rating
+ggplot(data = agr, aes(x = mean_rating, fill=paraphrase, color=paraphrase)) +
+  geom_density(alpha = .4) +
+  # facet_grid(~paraphrase) +
+  scale_fill_manual(values=cbPalette) +
+  scale_color_manual(values=cbPalette)
+# ggsave("../graphs/ex2b_denisty_mean_ratings.pdf",width=6,height=3)
+```
+
+## Standard Deviation
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+# look at differences in SD 
+ggplot(data = agr, aes(x = sd, fill=paraphrase, color=paraphrase)) +
+  geom_density(alpha = .4) +
+  scale_fill_manual(values=cbPalette) +
+  scale_color_manual(values=cbPalette)
+# ggsave("../graphs/ex2b_denisty_sd.pdf",width=6,height=3)
+```
+
+
+# Graph normed data
+
+## Overall
+
+```{r Graph normed data Overall}
+agr = d %>%
+  group_by(paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating), CILow = ci.low(normed_rating), CIHigh = ci.high(normed_rating)) %>%
+  mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
+  drop_na()
+
+View(agr)
+
+dodge = position_dodge(.9)
+ggplot(agr,aes(x=paraphrase, y=mean_rating, fill=paraphrase)) +
+  geom_bar(position=dodge,stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=dodge, show.legend = FALSE) +
+  # ggtitle("Mean rating for 'a' vs. 'every'") +
+  xlab("Paraphrase") +
+  ylab("Mean rating") +
+  ylim(0,.6) +
+  theme(legend.position = "none") +
+  scale_fill_manual(values=cbPalette) +
+  scale_color_manual(values=cbPalette)
+# ggsave("../graphs/overall_nocontext_embedded.pdf",width=2,height=2)
+```
+
+
+## Modal x Wh-Word
+
+```{r Look at Interaction between Modal and Wh}
+
+agr = d %>%
+  group_by(Wh,ModalPresent,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating), CILow = ci.low(normed_rating), CIHigh = ci.high(normed_rating)) %>%
+  mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
+  drop_na()
+
+# Re-Order the WH-levels by overall composition of DB
+agr$Wh <- factor(agr$Wh, levels=c("what","how","where","why","who","when"))
+
+ggplot(agr,aes(x=paraphrase, y=mean_rating, alpha=ModalPresent, fill=paraphrase)) +
+  geom_bar(position="dodge",stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=position_dodge(0.9)) +
+  facet_wrap(~Wh, ncol=2) +
+  xlab("Paraphrase") +
+  ylab("Mean rating") +
+  guides(fill=FALSE) +
+  guides(alpha=guide_legend(title="Modal present")) +
+  theme(legend.key.size = unit(0.3, "cm"),
+        legend.position = "top", # c(.5,1)
+        legend.direction = "horizontal",
+        legend.margin=margin(0,0,0,0),
+        legend.box.margin=margin(0,0,-5,-5),legend.spacing.y = unit(0.001, 'cm')) +
+    scale_fill_manual(values=cbPalette) +
+    scale_color_manual(values=cbPalette) +
+    scale_alpha_discrete(range = c(.5,1))
+
+# ggsave("../graphs/modxwh_nocontext_embedded.pdf",width=3,height=4)
+```
+
+
+```{r Look at just Wh,include=FALSE}
+agr = d %>%
+  group_by(paraphrase,Wh) %>%
+  summarize(mean_rating = mean(rating), CILow = ci.low(rating), CIHigh = ci.high(rating)) %>%
+  mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
+  drop_na()
+# Re-Order the WH-levels by overall composition of DB
+agr$Wh <- factor(agr$Wh, levels=c("what","how","where","why","who","when"))
+ggplot(agr,aes(x=Wh, y=mean_rating, fill=paraphrase)) +
+  geom_bar(position="dodge",stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax), width=.25,position=position_dodge(0.9))  +
+  # ggtitle("Mean rating for Wh-Word") +
+  xlab("Wh-Word") +
+  ylab("Mean rating") +
+  theme(legend.title = element_blank()) +
+  theme(legend.key.size = unit(0.3, "cm"),
+        legend.position = "top", # c(.5,1)
+        legend.direction = "horizontal") +
+  scale_fill_manual(values=cbPalette) +
+  scale_color_manual(values=cbPalette)
+```
+
+```{r Look at just ModalPresent,include=FALSE}
+agr = d %>%
+  group_by(paraphrase,ModalPresent) %>%
+  summarize(mean_rating = mean(normed_rating), CILow = ci.low(normed_rating), CIHigh = ci.high(normed_rating)) %>%
+  mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
+  drop_na()
+
+ggplot(agr,aes(x=ModalPresent, y=mean_rating, fill=paraphrase)) +
+  geom_bar(position="dodge",stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax), width=.25,position=position_dodge(0.9)) +
+  xlab("Modal Present") +
+  ylab("Mean rating") +
+  theme(legend.title = element_blank()) +
+  theme(legend.key.size = unit(0.3, "cm"),
+        legend.position = "top", # c(.5,1)
+        legend.direction = "horizontal") +
+  scale_fill_manual(values=cbPalette) +
+  scale_color_manual(values=cbPalette)
+
+```
+
+```{r Graph MatrixVerb only}
+verb_count = d %>%
+  filter(grepl("experiment_06",proliferate.condition)) %>%
+  group_by(VerbLemma) %>%
+  summarize(count = n())
+
+View(verb_count)
+nrow(verb_count) # 92 verbs
+
+
+agr = d %>%
+  # Most frequent
+  filter(VerbLemma %in% c("know","see","wonder","understand","be","understand","surprise","tell","figure","say","think","sure","learn","remember")) %>%
+  group_by(paraphrase,VerbLemma,ModalPresent) %>%
+  summarize(mean_rating = mean(normed_rating), CILow = ci.low(normed_rating), CIHigh = ci.high(normed_rating)) %>%
+  mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
+  drop_na()
+
+
+ggplot(agr,aes(x=paraphrase, y=mean_rating, alpha=ModalPresent, fill=paraphrase)) +
+  geom_bar(position="dodge",stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=position_dodge(0.9)) +
+  facet_wrap(~VerbLemma) +
+  xlab("Paraphrase") +
+  ylab("Mean rating") +
+  guides(fill=FALSE) +
+  guides(alpha=guide_legend(title="Modal present")) +
+  theme(legend.key.size = unit(0.3, "cm"),
+        legend.position = "top", # c(.5,1)
+        legend.direction = "horizontal",
+        legend.margin=margin(0,0,0,0),
+        legend.box.margin=margin(0,0,-5,-5),legend.spacing.y = unit(0.001, 'cm')) +
+    scale_fill_manual(values=cbPalette) +
+    scale_color_manual(values=cbPalette) +
+    scale_alpha_discrete(range = c(.5,1))
+
+# ggsave("../graphs/matrixverbs_threotical.pdf",width=10,height=10)
+```
+
+```{r Look at individual verbs}
+agr = d %>%
+  filter(VerbLemma == "know") %>%
+  group_by(Wh,ModalPresent,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating), CILow = ci.low(normed_rating), CIHigh = ci.high(normed_rating)) %>%
+  mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
+  drop_na()
+
+# Re-Order the WH-levels by overall composition of DB
+agr$Wh <- factor(agr$Wh, levels=c("what","how","where","why","who","when"))
+
+ggplot(agr,aes(x=paraphrase, y=mean_rating, alpha=ModalPresent, fill=paraphrase)) +
+  geom_bar(position="dodge",stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=position_dodge(0.9)) +
+  facet_wrap(~Wh,ncol=2) +
+  xlab("Paraphrase") +
+  ylab("Mean rating") +
+  guides(fill=FALSE) +
+  guides(alpha=guide_legend(title="Modal present")) +
+  ggtitle("Know") + 
+  theme(legend.key.size = unit(0.3, "cm"),
+        legend.position = "top", # c(.5,1)
+        legend.direction = "horizontal",
+        legend.margin=margin(0,0,0,0),
+        legend.box.margin=margin(0,0,-5,-5),legend.spacing.y = unit(0.001, 'cm')) +
+    scale_fill_manual(values=cbPalette) +
+    scale_color_manual(values=cbPalette) +
+    scale_alpha_discrete(range = c(.5,1))
+
+# ggsave("../graphs/modwh_know.pdf",width=3,height=4)
+```
+
+```{r Look at individual modals}
+agr = d %>%   
+  filter(ModalPresent %in% c("yes")) %>%
+  group_by(Modal,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating), CILow = ci.low(normed_rating), CIHigh = ci.high(normed_rating)) %>%
+  mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh)
+
+ggplot(agr, aes(x=paraphrase,y=mean_rating,fill=paraphrase)) +
+  geom_bar(stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax), width=.25,position=position_dodge(0.9)) +
+  facet_wrap(~Modal,ncol=3) +
+  theme(legend.title = element_blank()) +
+  theme(legend.key.size = unit(0.3, "cm"),
+        legend.position = "top", # c(.5,1)
+        legend.direction = "horizontal") +
+  scale_fill_manual(values=cbPalette) +
+  scale_color_manual(values=cbPalette)
+# ggsave("../graphs/modals.pdf",,width=4,height=5)
+```
+
+
+```{r Looking at individual items}
+the_high = d %>%
+  filter((paraphrase == "the") & (VerbLemma == "surprise")) %>% #  & (Wh == "why")
+  group_by(tgrep_id,Sentence) %>%
+  summarize(mean_rating = mean(normed_rating), sd = sd(normed_rating)) %>%
+  filter(mean_rating > .5) %>%
+  View()
+
+a_high = d %>%
+  filter((paraphrase == "a") & (VerbLemma == "tell")) %>% #     & (ModalPresent == "no") & (Wh == "who")
+  group_by(tgrep_id,Sentence, Question) %>%
+  summarize(mean_rating = mean(normed_rating), sd = sd(normed_rating)) %>%
+  # filter(mean_rating > .3) %>%
+  View()
+
+all_high = d %>%
+  filter((paraphrase %in% c("every") & VerbLemma == "predict")) %>% #  & (Wh == "when") & (ModalPresent == "yes")
+  group_by(tgrep_id,Sentence) %>%
+  summarize(mean_rating = mean(normed_rating), sd = sd(normed_rating)) %>%
+  filter(mean_rating > .1) %>%
+  View()
+
+# Look at all ratings for a specific example
+ex = d %>%
+  filter(tgrep_id == "29177:41") %>%
+  select(Sentence,Question,paraphrase,rating) %>%
+  group_by(Sentence,Question,paraphrase) %>%
+  summarize(mean_rating = mean(rating), sd = sd(rating)) %>%
+  View()  
+
+ex = d %>%
+  filter(tgrep_id == "2512:34") %>%
+  group_by(Sentence,Question,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating), sd = sd(normed_rating)) %>%
+  View()
+
+
+ex = d %>%
+  filter(tgrep_id == "39551:19")
+
+```

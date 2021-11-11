@@ -1,0 +1,426 @@
+
+  149  ls
+  150  cd ..
+  151  ls
+  152  cd alpslab.stanford.edu/
+  153  git pull
+  154  git status
+  155  git status
+  156  git pull
+  157  git pull
+  158  git status
+  159  git pull
+  160  git pull
+  161  ls -las
+  162  git pull
+  163  git pull origin master
+  164  git pull origin master
+  165  exit
+  166  cd /afs/ir.stanford.edu/group/alpslab/alpslab.stanford.edu/
+  167  git pull origin master
+  168  exit
+  169  cd /afs/ir.stanford.edu/group/alpslab/alpslab.stanford.edu/
+  170  git pull origin master
+  171  git pull origin master
+  172  git pull origin master
+  173  ls
+  174  ls _bibliography/
+  175  cd _bibliography/
+  176  mv alpslab-apa5.csl.xml alpslab-apa5.csl
+  177  git status
+  178  git add .
+  179  git status
+  180  git commit -m "rename csl"
+  181  git push
+  182  git pull origin master
+  183  git pull origin master
+  184  git pull origin master
+  185  git pull origin master
+  186  git pull origin master
+  187  exit
+  188  tgrep2 -af "a . (couple . of)" | more
+  189  tgrep2 -aftw "a . (couple . of)" | more
+  190  exit
+  191  cd /afs/ir.stanford.edu/group/alpslab/alpslab.stanford.edu/
+  192  git pull origin master
+  193  git pull origin master
+  194  exit
+  195  cd /afs/ir.stanford.edu/group/alpslab/alpslab.stanford.edu/
+  196  git pull origin master
+  197  exit
+  198  ls $TGREP2ABLE 
+  199  cd $TGREP2ABLE
+  200  pwd
+  201  cd ..
+  202  ls
+  203  cd ..
+  204  ls
+  205  cd COCA
+  206  ls
+  207  ls COCA Text
+  208  exit
+  209  cd /afs/ir.stanford.edu/group/alpslab/alpslab.stanford.edu/
+  210  ls
+  211  git pull origin master
+  212  git pull origin master
+  213  git pull origin master
+  214  git pull origin master
+  215  exit
+  216  cd $TGREP2
+  217  cd $TGREP2ABLE
+  218  ls
+  219  ls -las
+  220  ls -las /afs/ir/data/linguistic-data/mnt/mnt56/BNCParsed/
+  221  exit
+  222  cd /afs/ir.stanford.edu/group/alpslab/
+  223  ls
+  224  cd alpslab.stanford.edu/
+  225  ls
+  226  git pull
+  227  ls .git
+  228  less .git/hooks/post-merge 
+  229  ls
+  230  cd ..
+  231  ls
+  232  ls WWW/
+  233  exit
+  234  cd /afs/.ir.stanford.edu/group/alpslab/alpslab.stanford.edu/
+  235  git pull
+  236  exit
+  237  tgrep2 -afc "might|probably)"
+  238  tgrep2 -afc "(might|probably)" | more
+  239  tgrep2 -afc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "(might|probably)" | more
+  240  tgrep2 -aftwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "(might|probably)" | more
+  241  tgrep2 -aftwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "(might|probably)" > "mightprobably.txt"
+  242  wc -l mightprobably.txt 
+  243  tgrep2 -aftwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "might"  > might.txt"
+  244  tgrep2 -aftwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "might"  > "might.txt"
+  245  tgrep2 -aftwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "probably"  > "probably.txt"
+  246  wc -l probably.txt 
+  247  wc -l might.txt 
+  248  wc -l mightprobably.txt 
+  249  less might.x
+  250  less might.txt 
+  251  less probably.txt 
+  252  tgrep2 -aftwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "maybe" | wc -l
+  253  tgrep2 -aftwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "possibly" | wc -l
+  254  tgrep2 -aftwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "possibly" | more
+  255  mkdir uncertainty
+  256  cd uncertainty/
+  257  rm -r uncer
+  258  cd ..
+  259  rm -r uncertainty/
+  260  cd projects/
+  261  ls
+  262  mkdir uncertainty
+  263  cd uncertainty/
+  264  cp ../example_project/MACROS.ptn .
+  265  cp ../example_project/options .
+  266  cp ../example_project/data/ .
+  267  cp ../example_project/ptn/ .
+  268  cp ../example_project/results/ .
+  269  ls
+  270  cp ../example_project/data .
+  271  cp -r ../example_project/data/ .
+  272  ls
+  273  cp -r ../example_project/results/ .
+  274  cp -r ../example_project/ptn/ .
+  275  ls
+  276  cd data/
+  277  ls
+  278  rm -r swbd/
+  279  cd ..
+  280  ls
+  281  cd ptn/
+  282  ls
+  283  ls CatVar/
+  284  ls
+  285  cd CatVar/
+  286  ls
+  287  rm NP*
+  288  rm Pronoun*
+  289  ls
+  290  vi ID.ptn 
+  291  ls
+  292  cd ..
+  293  ls
+  294  cd NodeVar/
+  295  ls
+  296  cd ..
+  297  rm -r NodeVar/
+  298  ls
+  299  cd StringVar/
+  300  ls
+  301  vi Sentence.ptn 
+  302  rm PP*
+  303  ls
+  304  cd ..
+  305  ls
+  306  cd ..
+  307  ls
+  308  vi MACROS.ptn 
+  309  vi MACROS.ptn 
+  310  cd Stri
+  311  ls
+  312  cd ptn/StringVar/
+  313  ls
+  314  cp Sentence.ptn Expression.ptn
+  315  vi Expression.ptn 
+  316  cd ..
+  317  ls
+  318  cd ..
+  319  ls
+  320  vi options 
+  321  run -c -e -o
+  322  run -c swbd -e -o
+  323  wc -l results/swbd.tab 
+  324  less results/swbd.tab 
+  325  less results/test.txt 
+  326  rm results/test.txt 
+  327  ls
+  328  exit
+  329  cd projects/uncertainty/
+  330  ls
+  331  ls ../or/ptn/
+  332  ls
+  333  ls ../or/ptn/
+  334  ssh jdegen@slate.hlp.rochester.edu
+  335  ls
+  336  cd ptn/
+  337  ls
+  338  mkdir CtxtVar
+  339  cd CtxtVar/
+  340  vi 20-b.ptn
+  341  cd ..
+  342  cd ..
+  343  vi options 
+  344  vi options 
+  345  run -c swbdext -e -o
+  346  run -c swbd -e -o
+  347  less results/swbd
+  348  less results/swbd.tab 
+  349  exit
+  350  tgrep2 -afc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "/^V/ . /who|where|what/" | more
+  351  tgrep2 -aftc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "/^V/ . /who|where|what/" | more
+  352  tgrep2 -aftwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "/^V/ . /who|where|what/" | more
+  353  tgrep2 -aftwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "/^V/ . /who$|where$|what$/" | more
+  354  tgrep2 -aflwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "/^V/ . /who$|where$|what$/" | more
+  355  tgrep2 -aftwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "/^V/ . /who$|where$|what$/" | more
+  356  tgrep2 -aftwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "/^V/ . /who$|where$|how$/" | more
+  357  tgrep2 -aflwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "/^V/ . /who$|where$/" | more
+  358  tgrep2 -aflwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "/^VBD/ . /who$|where$/" | more
+  359  tgrep2 -aftwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "/^VBD/ . /who$|where$/" | more
+  360  tgrep2 -aftwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "/^VBD/ . /^who$|^where$/" | more
+  361  ls $TGREP2ABLE 
+  362  tgrep2 -aftwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "/^VBD/ . /^who$|^where$/" | more
+  363  tgrep2 -aftwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "/^V/ . (/^who$|^where$/ . /MD/)" | more
+  364  tgrep2 -aftwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "/^V/ . (/^who$|^where$/ .. /can/)" | more
+  365  tgrep2 -aftwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "/^VBD/ . /^who$|^where$/" | more
+  366  tgrep2 -aflwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "/^VBD/ . /^who$|^where$/" | more
+  367  tgrep2 -aflwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "/^VBD/ . /^who$|^where$/" | less
+  368  exit
+  369  ls
+  370  cd WWW/
+  371  ls
+  372  exit
+  373  cd cgi-bin/
+  374  ls
+  375  cd data_ling145/
+  376  ls
+  377  less ling-145-yannny_laurel-data.csv 
+  378  wc -l ling-145-yannny_laurel-data.csv 
+  379  exit
+  380  cd cgi-bin/
+  381  ls
+  382  cd data_ling145/
+  383  ls
+  384  less ling-145-data-gp.csv 
+  385  wc -l ling-145-data-gp.csv 
+  386  exit
+  387  ls
+  388  cd projects/
+  389  tgrep2 -afc /afs/ir/data/linguistic-data/Treebank/tgrep2able//sw.backtrans.convid_030507.t2c.gz "/^NP/" | more
+  390  tgrep2 -afc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "/^NP/" | more
+  391  tgrep2 -aftc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "/^NP/" | more
+  392  tgrep2 -afwtc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "/^NP/" | more
+  393  exit
+  394  echo $TGREP2ABLE 
+  395  cd $TGREP2ABLE
+  396  cd ../../
+  397  ls
+  398  cd Switchboard/
+  399  ls
+  400  cd Audio-swbd1ph2/
+  401  ls
+  402  cd cd0
+  403  cd cd01/
+  404  ls
+  405  ls -las
+  406  cd swb1/
+  407  ls
+  408  exit
+  409  ls
+  410  cd projects/
+  411  ls
+  412  exit
+  413  ls
+  414  cd
+  415  cd
+  416  exit
+  417  cd /afs/ir.stanford.edu/group/alpslab
+  418  ls
+  419  cd WWW/
+  420  ls
+  421  cd $TGREP2ABLE
+  422  ls
+  423  pwd
+  424  cd ../..
+  425  ls
+  426  cd Switchboard/
+  427  ls
+  428  pwd
+  429  cd /afs/ir.stanford.edu/data/
+  430  cd linguistic-data/
+  431  ls
+  432  cd Switchboard/
+  433  ls
+  434  cd Audio-swbd1ph2/
+  435  ls
+  436  cd cd01/
+  437  ls
+  438  cd /afs/ir.stanford.edu/group/alpslab/
+  439  ls
+  440  mkdir projects
+  441  cd projects/
+  442  mkdir corpus_some
+  443  cd corpus_some/
+  444  exit
+  445  cd /afs/.ir.stanford.edu/group/alpslab/
+  446  ls
+  447  mkdir data
+  448  ls
+  449  cd data
+  450  fs sa . mmearly rliwk
+  451  fs la
+  452  cd ..
+  453  fs la
+  454  fs sa . mmearly rliwk
+  455  fs la
+  456  ls
+  457  cd data/
+  458  fs sa . mmearly rliwkd
+  459  ls
+  460  fs la
+  461  cd targets/
+  462  ls
+  463  fs la
+  464  ls
+  465  cd ..
+  466  ls
+  467  rm -r contexts/
+  468  rm -r New\ folder/
+  469  rm -r targets/
+  470  ls
+  471  exit
+  472  cd /afs/ir.stanford.edu/group/alpslab/
+  473  ls
+  474  cd data/
+  475  ls
+  476  ls ../projects/
+  477  exit
+  478  cd /afs/.ir.stanford.edu/group/alpslab/
+  479  ls
+  480  cd data/
+  481  ls
+  482  exit
+  483  cd WWW/
+  484  ls
+  485  cd ..
+  486  ls
+  487  cd public/
+  488  ls
+  489  cd..
+  490  ls -las WWW
+  491  ls
+  492  cd ..
+  493  ls
+  494  ls -las WWW
+  495  cd /afs/.ir.stanford.edu/group/alpslab/
+  496  ls
+  497  cd alpslab.stanford.edu/
+  498  git pull
+  499  apt-get install jekyll
+  500  exit
+  501  ls
+  502  echo $TGREP2ABLE 
+  503  cd /afs/ir/data/linguistic-data/Treebank/tgrep2able/
+  504  ls
+  505  cd ~
+  506  tgrep2 -afc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "where" | more
+  507  tgrep2 -afc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "where" | wc - l
+  508  tgrep2 -afwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "where" | more
+  509  tgrep2 -aftwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "where" | more
+  510  tgrep2 -afltwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "where" | more
+  511  tgrep2 -aflwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "where" | more
+  512  tgrep2 -aftwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "where >> /SQ/" | more
+  513  tgrep2 -aftwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "where >> /SQ/" | wc -l
+  514  tgrep2 -aftwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "where" | more
+  515  tgrep2 -aflwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "where . (are . you)" | more
+  516  tgrep2 -aftwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "where >> /SBARQ/" | wc -l
+  517  tgrep2 -aftwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "where >> /SBARQ/" | more
+  518  tgrep2 -aftwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "where . can  >> /SBARQ/" | more
+  519  tgrep2 -aftwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "where . could  >> /SBARQ/" | more
+  520  tgrep2 -aftwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "where . should  >> /SBARQ/" | more
+  521  tgrep2 -aftwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "where . would  >> /SBARQ/" | more
+  522  tgrep2 -aflwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "where . would  >> /SBARQ/" | more
+  523  tgrep2 -aftwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "where . /MD/ >> /SBARQ/" | more
+  524  tgrep2 -aftwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "/where|what|who/ . /MD/ >> /SBARQ/" | more
+  525  tgrep2 -aflwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "/where|what|who/ . /MD/ >> /SBARQ/" | more
+  526  tgrep2 -aflwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "/where|what|who/ . /MD/ >> /SBARQ/" | more
+  527  tgrep2 -aflwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "/where/ . /MD/ >> /SBARQ/" | more
+  528  tgrep2 -aflwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "/WP|WRB/ . /MD/ >> /SBARQ/" | more
+  529  tgrep2 -aftwc /afs/ir/data/linguistic-data/Treebank/tgrep2able//swbd.t2c.gz "/WP|WRB/ . /MD/ >> /SBARQ/" | more
+  530  ls
+  531  cd projects/
+  532  ls
+  533  ls example_project/
+  534  ls
+  535  cp -r example_project/ wh-questions
+  536  ls
+  537  cd wh-questions/
+  538  ls
+  539  vi MACROS.ptn 
+  540  vi options 
+  541  ls
+  542  ls ptn
+  543  vi ptn/CatVar/ID.ptn 
+  544  ls
+  545  vi options 
+  546  run -c swbd -e -o
+  547  ls
+  548  ls data/swbd/ID.t2o 
+  549  less data/swbd/ID.t2o 
+  550  cd ptn/
+  551  ls
+  552  vi StringVar/Sentence.ptn 
+  553  cd ..
+  554  vi options 
+  555  run -c swbd -e -o
+  556  less data/swbd/Sentence.t2o 
+  557  less results/swbd.tab 
+  558  vi ptn/CatVar/Modal.ptn
+  559  less MACROS.ptn 
+  560  vi ptn/CatVar/Modal.ptn
+  561  less ptn/CatVar/Pronoun1.ptn 
+  562  vi options 
+  563  run -c swbd -e -o
+  564  less results/swbd.tab 
+  565  cd ptn/CatVar/
+  566  ls
+  567  cp Modal.ptn NotModal.ptn
+  568  vi NotModal.ptn 
+  569  cd ../..
+  570  vi options 
+  571  run -c swbd -e -o
+  572  less results/swbd.tab 
+  573  history > wh-history.txt

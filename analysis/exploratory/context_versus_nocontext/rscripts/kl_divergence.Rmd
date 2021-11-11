@@ -1,0 +1,195 @@
+---
+title: "Exploratory analysis of context: KL Divergence"
+author: Morgan Moyer
+date: May 18, 2021
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE, echo=FALSE}
+library(ggplot2)
+library(lme4)
+library(lmerTest)
+library(multcomp) # not available for this version of R
+library(philentropy)
+library(stringr)
+library(textstem)
+library(tidyverse)
+theme_set(theme_bw())
+cbPalette <- c("#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73")
+this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(this.dir)
+source("../../../helpers.R")
+```
+
+
+```{r read in all the data, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
+context_root = read.csv("../../../03_experiment/data/normed.csv") 
+context_root$Task <- "context"
+context_root$VerbLemma <- ""
+context_root = context_root[,!(names(context_root) %in% c("X"))]
+
+context_emb = read.csv("../../../04_experiment/data/normed.csv") 
+context_emb$Task <- "context"
+context_emb = context_emb[,!(names(context_emb) %in% c("X"))]
+
+
+nocontext_root = read.csv("../../../05_experiment/data/normed_nocontext_root.csv")
+nocontext_root$VerbLemma <- ""
+nocontext_root$Task <- "nocontext"
+nocontext_root = nocontext_root[,!(names(nocontext_root) %in% c("X"))]
+
+nocontext_emb = read.csv("../../../06_experiment/data/normed_nocontext_embedded.csv")
+nocontext_emb$Task <- "nocontext"
+nocontext_emb = nocontext_emb[,!(names(nocontext_emb) %in% c("X"))]
+```
+
+```{r join all the dfs together, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
+context <- full_join(context_root,context_emb)
+nocontext <- full_join(nocontext_root,nocontext_emb)
+d <- full_join(context, nocontext)
+
+# sanity check the join
+nrow(context_root) + nrow(context_emb) + nrow(nocontext_root) + nrow(nocontext_emb)
+nrow(d)
+```
+
+# Calculate KL-Divergence
+
+KLD(P || Q) = sum x in X: (P(x) * log2(P(x)/Q(x)))
+
+Compare to the uniform distribution.
+
+```{r widen the data, warning=FALSE, echo=FALSE, message=FALSE}
+# Aggregate ratings across subject and convert to wide
+d.wide.context <- d %>%
+  filter(Task == "context") %>%
+  group_by(tgrep_id,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating)) %>%
+  select(tgrep_id,paraphrase,mean_rating) %>%
+  pivot_wider(names_from=paraphrase,values_from=mean_rating)
+
+d.wide.nocontext <- d %>%
+  filter(Task == "nocontext") %>%
+  group_by(tgrep_id,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating)) %>%
+  select(tgrep_id,paraphrase,mean_rating) %>%
+  pivot_wider(names_from=paraphrase,values_from=mean_rating)
+```
+
+
+```{r calculate kld, warning=FALSE, echo=FALSE, message=FALSE}
+kls.context <- d.wide.context %>%
+  group_by(tgrep_id) %>%
+  summarize(kld = KL(rbind(c(a,every,the),c(1/3,1/3,1/3)),unit="log2"))
+kls.context$Task <- "context"
+
+kls.nocontext <- d.wide.nocontext %>%
+  group_by(tgrep_id) %>%
+  summarize(kld = KL(rbind(c(a,every,the),c(1/3,1/3,1/3)),unit="log2"))
+kls.nocontext$Task <- "nocontext"
+```
+
+```{r combine together, warning=FALSE, echo=FALSE, message=FALSE}
+d.kls <- full_join(kls.nocontext,kls.context)
+```
+
+
+```{r factors, warning=FALSE, echo=FALSE, message=FALSE}
+# look at linguistic factors
+d.factors <- unique(d[,c("tgrep_id","ModalPresent","Wh","QuestionType")])
+kls.factors <- left_join(d.kls,d.factors,by="tgrep_id")
+```
+
+## Plot the KLD between context and no context
+
+### Overall
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+ggplot(data = d.kls, aes(x=Task, y = kld, fill=Task)) +
+  geom_bar(stat="identity") +
+  scale_fill_manual(values=cbPalette) +
+  scale_color_manual(values=cbPalette)
+# ggsave("graphs/denisty_kld_context.pdf",width=6,height=3)
+```
+
+
+### Factors
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+agr <- kls.factors %>% 
+  group_by(Task, ModalPresent,Wh) %>% 
+  summarize(mean_kld = mean(kld), 
+            CILow = ci.low(kld), 
+            CIHigh = ci.high(kld)) %>%
+  mutate(YMin = mean_kld - CILow, 
+         YMax = mean_kld + CIHigh) %>%
+  drop_na()
+
+# Re-Order the WH-levels by overall composition of DB
+agr$Wh <- factor(agr$Wh, levels=c("what","how","where","why","who","when"))
+
+ggplot(data = agr, aes(x = Task, y=mean_kld, fill=ModalPresent)) +
+  geom_bar(position="dodge",stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),
+                width=.25,
+                position="dodge", 
+                show.legend = FALSE) +
+  facet_wrap(~Wh,ncol=2) +
+  scale_fill_manual(values=cbPalette) +
+  scale_color_manual(values=cbPalette) +
+  scale_alpha_discrete(range = c(.5,1))
+# ggsave("graphs/denisty_kld_context_factors.pdf",width=6,height=6)
+```
+
+
+## Difference in KLD by factors
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+kls.diffs.factors <- left_join(kls.difs.rel,d.factors,by="tgrep_id")
+
+ggplot(data = kls.diffs.factors, aes(x = difference_in_kld, fill=ModalPresent)) +
+  geom_density(alpha = .4) +
+  facet_wrap(~Wh) +
+  scale_fill_manual(values=cbPalette) +
+  scale_color_manual(values=cbPalette)
+# ggsave("graphs/difference_in_kld_factors_density.pdf",width=10,height=8)
+
+#plot all the individuals mean chosen
+ggplot(kls.diffs.factors, aes(x=Wh,y=difference_in_kld,fill=ModalPresent)) +
+  geom_bar(stat="identity",position="dodge")
+# ggsave("graphs/difference_in_kld_by-item_factors.pdf",width=10,height=8)
+
+```
+
+
+## Does Task predict KLD?
+
+- Yes: going from Context to NoContext yields a decrease in KLD
+- Interpretation: There is less information loss in the Context Task than in the NoContext Task
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+# just recode the factors so that negative values are nocontext and positive values are context
+d.kls$Task <- as.factor(d.kls$Task)
+d.kls$Task <- recode_factor(d.kls$Task, context=1, nocontext=0)
+
+d.kls$tgrep_id = as.factor(d.kls$tgrep_id)
+d.kls$cTask = as.numeric(as.factor(d.kls$Task)) - mean(as.numeric(as.factor(d.kls$Task)))
+
+m.kld <- lmer(kld~cTask + (1|tgrep_id), data=d.kls)
+summary(m.kld)
+
+plot(m.kld)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+
+d.kls$Fitted = fitted(m.kld)
+ggplot(d.kls, aes(x=Fitted,y=kld)) +
+  geom_point() +
+  geom_smooth(method="lm") +
+  xlim(0,1) +
+  ylim(0,1) +
+  ylab("Empirical rating") +
+  xlab("Predicted rating")
+# ggsave("../graphs/model_fit_0.pdf",width=5,height=4)
+cor(d.kls$Fitted,d.kls$kld)
+```
+
+
+

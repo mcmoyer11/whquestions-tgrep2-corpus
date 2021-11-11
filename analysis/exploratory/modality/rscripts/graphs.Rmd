@@ -1,0 +1,128 @@
+---
+title: "Modals across experiments"
+author: "morgan moyer"
+date: "11/5/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r setup, include=FALSE, warning=FALSE, echo=FALSE}
+library(ggplot2)
+library(lme4)
+library(lmerTest)
+library(multcomp) # not available for this version of R
+library(philentropy)
+library(stringr)
+library(textstem)
+library(tidyverse)
+theme_set(theme_bw())
+cbPalette <- c("#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73")
+this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(this.dir)
+source("../../../helpers.R")
+```
+
+
+```{r read in all the data, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
+context_root = read.csv("../../../03_experiment/data/normed.csv") 
+context_root$Task <- "context"
+context_root$VerbLemma <- ""
+context_root = context_root[,!(names(context_root) %in% c("X"))]
+
+context_emb = read.csv("../../../04_experiment/data/normed.csv") 
+context_emb$Task <- "context"
+context_emb = context_emb[,!(names(context_emb) %in% c("X"))]
+
+
+nocontext_root = read.csv("../../../05_experiment/data/normed_nocontext_root.csv")
+nocontext_root$VerbLemma <- ""
+nocontext_root$Task <- "nocontext"
+nocontext_root = nocontext_root[,!(names(nocontext_root) %in% c("X"))]
+
+nocontext_emb = read.csv("../../../06_experiment/data/normed_nocontext_embedded.csv")
+nocontext_emb$Task <- "nocontext"
+nocontext_emb = nocontext_emb[,!(names(nocontext_emb) %in% c("X"))]
+```
+
+```{r join all the dfs together, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
+context <- full_join(context_root,context_emb)
+nocontext <- full_join(nocontext_root,nocontext_emb)
+d <- full_join(context, nocontext)
+
+# sanity check the join
+nrow(context_root) + nrow(context_emb) + nrow(nocontext_root) + nrow(nocontext_emb)
+names(d)
+```
+
+# Let's graph overall
+```{r agregate for graphing}
+agr = d %>%
+  # look only at embedded questions
+  # filter(VerbLemma != "") %>% 
+  group_by(Modal,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating), CILow = ci.low(normed_rating), CIHigh = ci.high(normed_rating)) %>%
+  mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
+  drop_na()
+dodge = position_dodge(.9)
+```
+
+
+```{r graph}
+ggplot(agr,aes(x=paraphrase, y=mean_rating, fill=paraphrase)) +
+  geom_bar(position=dodge,stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=dodge, show.legend = FALSE) +
+  # ggtitle("Mean rating for 'a' vs. 'every'") +
+  facet_wrap(~Modal) +
+  xlab("paraphrase") +
+  ylab("Mean rating") +
+  guides(fill=FALSE) +
+  # guides(alpha=guide_legend(title="MatrixNegPresent")) +
+  theme(legend.key.size = unit(0.3, "cm"),
+        legend.position = "top", # c(.5,1)
+        legend.direction = "horizontal",
+        legend.margin=margin(0,0,0,0),
+        legend.box.margin=margin(0,0,-5,-5),legend.spacing.y = unit(0.001, 'cm')) +
+    scale_fill_manual(values=cbPalette) +
+    scale_color_manual(values=cbPalette)
+    # scale_alpha_discrete(range = c(.5,1))
+# ggsave("../graphs/overall_negation.pdf",width=6,height=3)
+
+```
+
+# Let's graph with Task
+```{r agregate for graphing}
+agr = d %>%
+  # look only at embedded questions
+  # filter(VerbLemma != "") %>% 
+  group_by(Task,Modal,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating), CILow = ci.low(normed_rating), CIHigh = ci.high(normed_rating)) %>%
+  mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
+  drop_na()
+dodge = position_dodge(.9)
+```
+
+
+```{r graph}
+ggplot(agr,aes(x=paraphrase, y=mean_rating, fill=paraphrase)) +
+  geom_bar(position=dodge,stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=dodge, show.legend = FALSE) +
+  # ggtitle("Mean rating for 'a' vs. 'every'") +
+  facet_grid(Task~Modal) +
+  xlab("paraphrase") +
+  ylab("Mean rating") +
+  guides(fill=FALSE) +
+  # guides(alpha=guide_legend(title="MatrixNegPresent")) +
+  theme(legend.key.size = unit(0.3, "cm"),
+        legend.position = "top", # c(.5,1)
+        legend.direction = "horizontal",
+        legend.margin=margin(0,0,0,0),
+        legend.box.margin=margin(0,0,-5,-5),legend.spacing.y = unit(0.001, 'cm')) +
+    scale_fill_manual(values=cbPalette) +
+    scale_color_manual(values=cbPalette)
+    # scale_alpha_discrete(range = c(.5,1))
+# ggsave("../graphs/overall_negation.pdf",width=6,height=3)
+
+```

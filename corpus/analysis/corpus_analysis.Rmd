@@ -1,0 +1,283 @@
+---
+title: "Analysis of wh-questions"
+author: "mcmoyer"
+date: "October 22, 2020"
+output: html_document
+---
+  
+```{r}  
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+library(lme4)
+# theme_set(theme_bw())
+
+this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(this.dir)
+source("../../analysis/helpers.R")
+```
+
+Read the database into R and explore it.
+```{r}
+d = read.table("../results/swbd.tab",sep="\t",header=T,quote="")
+
+# Load in the .csv with the contexts removed
+# d = read.csv("swbd_nocntxt.csv",header=T)
+View(d)
+
+table(d$trace)
+
+n = d %>%
+  filter(Trace == "")
+
+n = subset(d, d$Trace == "")
+n = filter(d, d$Trace == "")
+
+# old
+nrow(d) # 10667.....10278....10192 (added MACRO (@WH > /^WH/)...10199 (@WH >> /^WH)
+head(d)
+str(d)
+names(d)
+
+table(d$WhAdvP,d$QuestionType)
+
+table(d$QuestionType)
+# 650 cleft
+View(d[d["Item_ID"] == "138690:33"])
+
+(TOP 
+  (S 
+    (NP-SBJ (DT That)) 
+    (VP 
+      (BES 's) 
+      (NP-PRD 
+          (NP (CD one)) 
+          (PP 
+              (IN of) 
+              (NP 
+                  (NP 
+                      (PRP$ my) 
+                      (JJ favorite) 
+                      (NNS things)) 
+                  (SBAR 
+                      (WHNP-1 (-NONE- 0)) 
+                      (S 
+                          (NP-SBJ (-NONE- *)) 
+                          (EDITED 
+                              (RM (-DFL- \[)) 
+                              (VP-UNF (TO to)) 
+                              (, ,) 
+                              (IP (-DFL- \+))) 
+                          (VP (TO to) 
+                              (RS (-DFL- ])) 
+                              (VP 
+                                  (VB serve) 
+                                  (NP (-NONE- *T*-1)))))))))) (. .) (-DFL- E_S)))
+
+
+
+# exclude were & were
+# "whose","whereabouts","whatever","which")) because exhaustivity questions doesn't arise
+table(root$Wh)
+
+# convert all columns to factor
+d <- as.data.frame(unclass(d))
+
+str(d)
+table(d$QuestionType)
+# Make sure there are none without a tag
+nrow(subset(d, d$QuestionType==""))
+# 
+#  adjunct       cleft  embadjunct    embedded exclamation    fragment    relative        
+#         775         586        2401        2432          34         126        1378        root     subject 
+#         1719         748 
+
+
+nrow(subset(d,d$QuestionType=="cleft")) #650 --> 660
+nrow(subset(d,d$QuestionType=="embedded")) #2357 --> 1640
+
+# randomly sample an embedded clause
+d_emb = subset(d, d$QuestionType=="embedded")
+# View(sample_n(d_emb,10))
+d_crit = d_emb %>%
+  filter(Wh %in% c("who","where","how"))
+nrow(d_emb) # 3018 --> 2421 --> 2357 --> 1692 (after removing SBAR-NOM)
+nrow(d_crit) #1087 --> 954 --> 912 --> 840 (after removing SBAR-NOM)
+
+
+set.seed(123)
+set.seed(321)
+se <- sample_n(d_emb,20)
+View(se)
+
+View(se[,c("Item_ID","Sentence","MatrixSubject","SentenceParse")])
+View(se[,c("Item_ID","Sentence","JustMatrixClause","MatrixPredAux","MatrixPredVerb","MatrixPredOther","MatrixPredParticle","SentenceParse")])
+
+
+
+
+# shouldnt be embedded:
+d[d["Item_ID"] == "138690:33"]
+nrow(d)
+```
+(TOP (S (CC But) 
+        (NP-SBJ (PRP you)) 
+        (VP (VBP wonder) 
+            (SBAR (WHADVP (WRB how) (, ,) (UH well)) 
+                  (, ,) 
+                  (S-UNF (NP-SBJ (DT this) (NN thing))))) (, ,) (-DFL- N_S)))
+
+Take a random sample of 200.
+```{r}
+set.seed(123)
+s <- sample_n(d, 200)
+View(s)
+View(s[,c("Item_ID","QuestionType","Sentence","Question","SentenceParse")])
+
+nrow(s)
+# write to CSV
+
+write.csv(s, "whq_sample_200.csv",row.names = TRUE)
+
+s_emb = subset(s, s$QuestionType=="embedded")
+View(s_emb)
+
+```
+https://github.com/thegricean/corpus_implicatures/tree/master/or/experiments/4_implicature_exp/experiments/02_main/experiment_00/js
+
+https://github.com/thegricean/corpus_implicatures/blob/master/some/experiments/main_experiments/speaker_knowledge/experiment_01/public/js/stimuli.js
+https://raw.githubusercontent.com/leylakursat/some_without_context/master/experiment/corpora/corpus1.txt
+
+https://thegricean.github.io/corpus_implicatures/or/experiments/4_implicature_exp/experiments/02_main/experiment_00/index.html
+
+
+Reproduce the same set
+```{r}
+# the original DF i sent jd
+sa <- read.csv("whq_sample_200_A.csv", header=TRUE)
+
+
+sa = sa[order(sa$Item_ID),]
+
+# this will remove any columns that aren't shared 
+ddnew = semi_join(sa, d, by=c("Item_ID"))
+# drop that first column
+ddnew = ddnew[-c(1)]
+write.csv(ddnew, "whq_sample_200_neworig.csv",row.names = TRUE)
+
+# try to check if they're the same IDs
+
+ddnew_names = ddnew$Item_ID
+sa_names = sa$Item_ID
+length(sa_names)
+
+all.equal(ddnew_names,sa_names)
+
+View(ddnew)
+
+# this doesn't remove any columns that aren't in sa
+snew = d %>%
+  filter(Item_ID %in% sa$Item_ID)
+
+View(snew)
+write.csv(snew, "whq_sample_200_neworig.csv",row.names = TRUE)
+# save it to a csv file and provide an annotation guide for what 
+# the different types of features should be
+# overleaf. 
+# 
+```
+
+# some embedded cases aren't printing a matrix verb
+```{r}
+emb <- subset(d, d$QuestionType=="embedded")
+nrow(emb)
+
+
+enmv = emb %>%
+  filter(MatrixPred1 %in% c(""))
+nrow(enmv) # 3333.....0! fixed
+View(enmv)
+
+```
+Take a look at cases where there is no questionType assigned.
+```{r}
+no_qt = subset(d, d$QuestionType=="")
+nrow(no_qt) # 1016....819....20....18...0!
+View(no_qt)
+```
+Look at the modal and non-modal cases
+```{r}
+
+mod = subset(d, d$ModalPresent=="yes")
+nrow(mod) # 895
+
+nmod = subset(d, d$ModalPresent=="no")
+nrow(nmod) # 9235
+
+table(d$ModalPresent)
+
+nf2 <- subset(d, d$Finite=="no") # YES THESE ARE ALL GOOD
+nrow(nf2) #190....186?
+View(nf2)
+# sanity check
+nf <- subset(d, d$Finite!="yes") 
+nrow(nf) #186
+View(nf)
+
+# Do these return all the same ?
+all.equal(nf,nf2) # TRUE
+````
+cases that are tagged neither as modal or non-modal
+
+
+
+````{r}
+notmod = subset(d, d$ModalPresent!="no" & d$ModalPresent!="yes")
+nrow(notmod)
+View(notmod)
+str(d)
+notmodcomp = d %>%
+  filter(!ModalPresent %in% c("yes","no")) %>%
+  filter(WhPhraseType %in% c("complex"))
+
+notmodcomp2 = subset(notmod, notmod$WhPhaseType=="complex")
+nrow(notmodcomp2) # so there are non-complex wh that are failing
+notmodnotcomp = subset(notmod, notmod$WhPhaseType!="complex")
+nrow(notmodnotcomp)
+View(notmodnotcomp)
+
+```
+
+
+```{r}
+dd = grepl("can|could|may|might|must|shall|should", d$Sentence)
+View(dd)
+
+mods <- ""
+for (r in notmod){
+    if (grepl("can|could|may|might|must|shall|should", notmod$Sentence))
+    mods + r
+  }
+```
+
+Graphssss
+
+```{r}
+ftable(d$QuestionType,d$ModalPresent)
+
+agr = d %>%
+  group_by(QuestionType,ModalPresent,Finite) %>%
+  mutate(count = count(Sentence), prop_modal= ) %>%
+  
+  ggplot(d, aes(x=as.factor(QuestionType),y=as.factor(Finite), fill = as.factor(ModalPresent))) +
+  geom_bar()
+  
+View(agr)
+
+```
+
+Looking at embedded questions
+```{r}
+
+
+```

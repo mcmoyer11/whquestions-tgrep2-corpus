@@ -1,0 +1,195 @@
+---
+title: "Analysis of ROOT & EMBEDDED QUESTIONS TOGETHER"
+author: "mcmoyer"
+date: "March 30, 2021"
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE, echo=FALSE}
+library(lme4)
+library(lmerTest)
+library(multcomp) # not available for this version of R
+library(tidyverse)
+theme_set(theme_bw())
+
+this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(this.dir)
+
+cbPalette <- c("#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73")
+```
+
+########################################################################
+# Read the data into R.
+```{r}
+rq = read.csv("../../../03_experiment/data/normed.csv")
+eq = read.csv("../../../04_experiment/data/normed.csv")
+rq = rq[,c("workerid","tgrep_id","ModalPresent","Modal","QuestionType","Question","Sentence","paraphrase","normed_rating","Finite","Wh")]
+eq = eq[,c("workerid","tgrep_id","ModalPresent","Modal","QuestionType","Question","Sentence","paraphrase","normed_rating","Finite","Wh","VerbLemma")]
+
+rq$QuestionType = "root"
+rq$VerbLemma = ""
+
+d = rbind(rq,eq)
+table(d$QuestionType)
+
+```
+
+# Center and set contrast levels
+```{r}
+d$ModalPresent = as.factor(d$ModalPresent)
+d$Wh = as.factor(d$Wh)
+d$paraphrase = as.factor(d$paraphrase)
+d$QuestionType = as.factor(d$QuestionType)
+
+# set the reference levels
+contrasts(d$Wh) = cbind("how.vs.when"=c(0,1,0,0,0,0),"what.vs.when"=c(1,0,0,0,0,0),
+                "where.vs.when"=c(0,0,0,1,0,0),"who.vs.when"=c(0,0,0,0,1,0),
+                "why.vs.when"=c(0,0,0,0,0,1))
+
+# this won't work if the 'other' category is included, so REDO
+contrasts(d$paraphrase) = cbind("a.vs.every"=c(1,0,0),"the.vs.every"=c(0,0,1))
+
+centered = d
+centered$cModalPresent = as.numeric(centered$ModalPresent) - mean(as.numeric(centered$ModalPresent))
+
+```
+
+# Full Model
+```{r}
+########################################################################
+# model with random slopes no matrix verb predictor
+# m.full = lmer(rating ~ cModalPresent*Wh*paraphrase + (1+paraphrase+Wh+cModalPresent|workerid) + (1+paraphrase|tgrep_id), data=centered,REML=FALSE) 
+# summary(m.full)
+# saveRDS(m.full, "../model-context-full.rds")
+
+m.full <- readRDS("../model-context-full.rds")
+summary(m.full)
+
+```
+
+# Break up models by Wh
+
+## What
+```{r}
+########################################################################
+# "what" model
+d_what = centered %>% 
+  filter(Wh=="what") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>%
+  droplevels()
+contrasts(d_what$paraphrase) = cbind("a.vs.every"=c(1,0,0),"the.vs.every"=c(0,0,1))
+contrasts(d_what$QuestionType) = cbind("emb.vs.sai"=c(1,0,0),"root.vs.sai"=c(0,0,1))
+
+# m.what = lmer(normed_rating ~ cModalPresent*paraphrase*QuestionType + (1+paraphrase+cModalPresent|workerid) + (1+paraphrase|VerbLemma) + (1+paraphrase|tgrep_id), data=d_what)
+# saveRDS(m.what, "../model-context-what-QT.rds")
+
+m.what <- readRDS("../model-context-what-QT.rds")
+summary(m.what)
+
+# m.what.simple = lmer(normed_rating ~ paraphrase*cModalPresent-cModalPresent + (1+paraphrase+cModalPresent|workerid) + (1+paraphrase|VerbLemma)  + (1+paraphrase|tgrep_id), data=d_what) 
+# summary(m.what.simple)
+```
+
+## How
+```{r}
+# "how" model
+d_how = centered %>% 
+  filter(Wh=="how") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>%
+  droplevels()
+contrasts(d_how$paraphrase) = cbind("a.vs.every"=c(1,0,0),"the.vs.every"=c(0,0,1))
+contrasts(d_how$QuestionType) = cbind("emb.vs.sai"=c(1,0,0),"root.vs.sai"=c(0,0,1))
+
+# m.how = lmer(normed_rating ~ cModalPresent*paraphrase*QuestionType + (1+paraphrase+cModalPresent|workerid) + (1+paraphrase|VerbLemma)  + (1+paraphrase|tgrep_id), data=d_how)
+# saveRDS(m.how, "../model-context-how-QT.rds")
+
+m.how <- readRDS("../model-context-how-QT.rds")
+summary(m.how)
+
+# m.how.simple = lmer(normed_rating ~ paraphrase*cModalPresent-cModalPresent + (1+paraphrase|tgrep_id), data=d_how) 
+# summary(m.how.simple)
+```
+
+## Where
+
+```{r}
+d_where = centered %>% 
+  filter(Wh=="where") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>%
+  droplevels()
+contrasts(d_where$paraphrase) = cbind("a.vs.every"=c(1,0,0),"the.vs.every"=c(0,0,1))
+contrasts(d_where$QuestionType) = cbind("emb.vs.sai"=c(1,0,0),"root.vs.sai"=c(0,0,1))
+
+# m.where = lmer(normed_rating ~ cModalPresent*paraphrase*QuestionType + (1+paraphrase+cModalPresent|workerid) + (1+paraphrase|VerbLemma) + (1+paraphrase|tgrep_id), data=d_where)
+# saveRDS(m.where, "../model-context-where-QT.rds")
+
+m.where <- readRDS("../model-context-where-QT.rds")
+summary(m.where)
+
+# m.where.simple = lmer(normed_rating ~ paraphrase*cModalPresent-cModalPresent + (1+paraphrase+cModalPresent|workerid) + (1+paraphrase|tgrep_id), data=d_where) 
+# summary(m.where.simple)
+```
+
+## Why
+
+```{r}
+d_why = centered %>% 
+  filter(Wh=="why") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>%
+  droplevels()
+contrasts(d_why$paraphrase) = cbind("a.vs.every"=c(1,0,0),"the.vs.every"=c(0,0,1))
+contrasts(d_why$QuestionType) = cbind("emb.vs.sai"=c(1,0,0),"root.vs.sai"=c(0,0,1))
+
+# m.why = lmer(normed_rating ~ cModalPresent*paraphrase*QuestionType + (1+paraphrase+cModalPresent|workerid) + (1+paraphrase|VerbLemma) + (1+paraphrase|tgrep_id), data=d_why) 
+# saveRDS(m.why, "../model-context-why-QT.rds")
+
+m.why <- readRDS("../model-context-why-QT.rds")
+summary(m.why)
+# m.why.simple = lmer(rating ~ paraphrase*cQuestionType*cModalPresent-cModalPresent + (1+paraphrase+cModalPresent|workerid) + (1+paraphrase|tgrep_id), data=d_why) 
+# summary(m.why.simple)
+```
+
+## Who
+
+```{r}
+d_who = centered %>% 
+  filter(Wh=="who") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>%
+  droplevels()
+contrasts(d_who$paraphrase) = cbind("a.vs.every"=c(1,0,0),"the.vs.every"=c(0,0,1))
+contrasts(d_who$QuestionType) = cbind("emb.vs.sai"=c(1,0,0),"root.vs.sai"=c(0,0,1))
+
+# m.who = lmer(normed_rating ~ cModalPresent*paraphrase*QuestionType + (1+paraphrase|workerid)+ (1+paraphrase|VerbLemma) + (1+paraphrase|tgrep_id), data=d_who) 
+# saveRDS(m.who, "../model-context-who-QT.rds")
+
+m.who <- readRDS("../model-context-who-QT.rds")
+summary(m.who)
+
+# m.who.simple = lmer(normed_rating ~ paraphrase*cModalPresent-cModalPresent + (1+paraphrase|workerid) + (1+paraphrase|tgrep_id), data=d_who) 
+# summary(m.who.simple)
+```
+
+## When
+
+```{r}
+# have to use less random effects structure
+d_when = centered %>% 
+  filter(Wh=="when") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>%
+  droplevels()
+contrasts(d_when$paraphrase) = cbind("a.vs.every"=c(1,0,0),"the.vs.every"=c(0,0,1))
+contrasts(d_when$QuestionType) = cbind("emb.vs.sai"=c(1,0,0),"root.vs.sai"=c(0,0,1))
+
+# m.when = lmer(normed_rating ~ cModalPresent*paraphrase*QuestionType + (1+paraphrase|VerbLemma) + (1+paraphrase|tgrep_id), data=d_when) 
+# saveRDS(m.when, "../model-context-when-QT.rds")
+
+m.when <- readRDS("../model-context-when-QT.rds")
+summary(m.when)
+
+
+# simple effects
+# m.when.simple = lmer(normed_rating ~ paraphrase*cModalPresent-cModalPresent + (1+paraphrase|tgrep_id), data=d_when) 
+# summary(m.when.simple)
+# 
+```
+

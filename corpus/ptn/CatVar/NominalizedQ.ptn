@@ -1,0 +1,1 @@
+@WH >> (/SBAR-NOM/ [!$ /^VB|^JJ|^BE/] | [!> (/^PP/ $ /^VB|^JJ|^BE/)])

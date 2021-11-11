@@ -1,0 +1,8 @@
+@ WORD		/^'{0,1}[a-zA-Z]+.*/;
+@ TERMINAL      * !< *;
+@ NP		/^NP/;
+@ VP            /^VP/;
+@ PP            /^PP/;
+@ DISFL         /EDITED|UH|PRN|-UNF/;
+@ PPPP          (@VP=vp1 < (@PP=pp1 !<< -NONE- $.. (@PP=pp2 !<< -NONE- !$ (@PP != =pp1) !,, (@TERMINAL ,, =pp1 !>> (@DISFL >> =vp1)))));
+@ WH		/WP|WRB|WDT/ !< /^t|^T/ !>> @DISFL >> /^S/ !> /^N|^A/ >> /^WH/

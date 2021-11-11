@@ -1,0 +1,182 @@
+---
+title: "Analysis of Root + Embedded Questions, NO CONTEXT"
+author: "mcmoyer"
+date: "March 30, 2021"
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE, echo=FALSE}
+library(lme4)
+library(lmerTest)
+library(multcomp) # not available for this version of R
+library(tidyverse)
+theme_set(theme_bw())
+
+this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(this.dir)
+source("../../../helpers.R")
+
+cbPalette <- c("#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73")
+```
+
+# Read Data in
+```{r}
+d = read.csv("../data/normed.csv")
+```
+
+# Center and set contrast levels
+```{r}
+d$ModalPresent = as.factor(d$ModalPresent)
+d$Wh = as.factor(d $Wh)
+d$paraphrase = as.factor(d$paraphrase)
+d$QuestionType = as.factor(d$QuestionType)
+
+# Need to first figure out which verbs to look at
+d$VerbLemma = as.factor(d$VerbLemma)
+
+# Set the reference levels
+contrasts(d$ModalPresent) # once this is centered, the reference level won't matter anymore
+contrasts(d$paraphrase)
+contrasts(d$Wh)
+
+contrasts(d$Wh) = cbind("how.vs.when"=c(0,1,0,0,0,0),"what.vs.when"=c(1,0,0,0,0,0),
+                "where.vs.when"=c(0,0,0,1,0,0),"who.vs.when"=c(0,0,0,0,1,0),
+                "why.vs.when"=c(0,0,0,0,0,1))
+
+contrasts(d$paraphrase) = cbind("a.vs.every"=c(1,0,0),"the.vs.every"=c(0,0,1))
+
+centered = cbind(d,myCenter(d["ModalPresent"]))
+
+```
+
+# Full Model
+```{r}
+# m.full = lmer(rating ~ cModalPresent*Wh*paraphrase + (1+paraphrase+Wh+cModalPresent|workerid) + (1+paraphrase|tgrep_id), data=centered,REML=FALSE) 
+
+# saveRDS(m.full, "model-nocontext-full.rds")
+nocontext_model <- readRDS("model-nocontext-full.rds")
+summary(nocontext_model)
+```
+
+# Models broken up by Wh
+
+## What
+```{r}
+# "what" model
+d_what = centered %>% 
+  filter(Wh=="what") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>%
+  droplevels()
+contrasts(d_what$paraphrase) = cbind("a.vs.every"=c(1,0,0),"the.vs.every"=c(0,0,1))
+contrasts(d_what$QuestionType) = cbind("emb.vs.sai"=c(1,0,0),"root.vs.sai"=c(0,0,1))
+
+# m.what = lmer(rating ~ cModalPresent*paraphrase*QuestionType + (1+paraphrase+cModalPresent|workerid) + (1+paraphrase|tgrep_id), data=d_what)
+# saveRDS(m.what, "model-nocontext-what-QT.rds")
+
+m.what <- readRDS("model-nocontext-what-QT.rds")
+summary(m.what)
+
+# m.what.simple = lmer(rating ~ paraphrase*cModalPresent-cModalPresent + (1+paraphrase+cModalPresent|workerid) + (1+paraphrase|tgrep_id), data=d_what) 
+# summary(m.what.simple)
+```
+
+## How
+
+```{r}
+# "how" model
+d_how = centered %>% 
+  filter(Wh=="how") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>% 
+  droplevels()
+contrasts(d_how$paraphrase) = cbind("a.vs.every"=c(1,0,0),"the.vs.every"=c(0,0,1))
+contrasts(d_how$QuestionType) = cbind("emb.vs.sai"=c(1,0,0),"root.vs.sai"=c(0,0,1))
+
+# m.how = lmer(rating ~ cModalPresent*paraphrase*QuestionType + (1+paraphrase+cModalPresent|workerid) + (1+paraphrase|tgrep_id), data=d_how)
+# saveRDS(m.how, "model-nocontext-how.rds")
+
+m.how <- readRDS("model-nocontext-how.rds")
+summary(m.how)
+
+# m.how.simple = lmer(rating ~ paraphrase*cModalPresent-cModalPresent + (1+paraphrase|tgrep_id), data=d_how) 
+# summary(m.how.simple)
+```
+
+## Where
+```{r}
+# "where" model
+d_where = d %>% 
+  filter(Wh=="where") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>% 
+  droplevels()
+contrasts(d_where$paraphrase) = cbind("a.vs.every"=c(1,0,0),"the.vs.every"=c(0,0,1))
+contrasts(d_where$QuestionType) = cbind("emb.vs.sai"=c(1,0,0),"root.vs.sai"=c(0,0,1))
+
+# m.where = lmer(rating ~ cModalPresent*paraphrase*QuestionType + (1+paraphrase+cModalPresent|workerid) + (1+paraphrase|tgrep_id), data=d_where)
+# saveRDS(m.where, "model-nocontext-where.rds")
+
+m.where <- readRDS("model-nocontext-where.rds")
+summary(m.where)
+
+# m.where.simple = lmer(rating ~ paraphrase*cModalPresent-cModalPresent + (1+paraphrase+cModalPresent|workerid) + (1+paraphrase|tgrep_id), data=d_where) 
+# summary(m.where.simple)
+```
+
+## Why
+
+```{r}
+d_why = d %>% 
+  filter(Wh=="why") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>% 
+  droplevels()
+contrasts(d_why$paraphrase) = cbind("a.vs.every"=c(1,0,0),"the.vs.every"=c(0,0,1))
+contrasts(d_why$QuestionType) = cbind("emb.vs.sai"=c(1,0,0),"root.vs.sai"=c(0,0,1))
+
+# m.why = lmer(rating ~ cModalPresent*paraphrase*QuestionType + (1+paraphrase+cModalPresent|workerid) + (1+paraphrase|tgrep_id), data=d_why)
+# saveRDS(m.why, "model-nocontext-why.rds")
+
+m.why <- readRDS("model-nocontext-why.rds")
+summary(m.why)
+
+# m.why.simple = lmer(rating ~ paraphrase*cModalPresent-cModalPresent + (1+paraphrase+cModalPresent|workerid) + (1+paraphrase|tgrep_id), data=d_why) 
+# summary(m.why.simple)
+```
+
+# Who
+```{r}
+d_who = d %>% 
+  filter(Wh=="who") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>% 
+  droplevels()
+contrasts(d_who$paraphrase) = cbind("a.vs.every"=c(1,0,0),"the.vs.every"=c(0,0,1))
+contrasts(d_who$QuestionType) = cbind("emb.vs.sai"=c(1,0,0),"root.vs.sai"=c(0,0,1))
+
+# m.who = lmer(rating ~ cModalPresent*paraphrase*QuestionType + (1+paraphrase|workerid) + (1+paraphrase|tgrep_id), data=d_who)
+# saveRDS(m.who, "model-nocontext-who.rds")
+
+m.who <- readRDS("model-nocontext-who.rds")
+summary(m.who)
+
+# m.who.simple = lmer(rating ~ paraphrase*cModalPresent-cModalPresent + (1+paraphrase|workerid) + (1+paraphrase|tgrep_id), data=d_who) 
+# summary(m.who.simple)
+```
+
+## When
+```{r}
+# have to use less random effects structure
+d_when = d %>% 
+  filter(Wh=="when") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>% 
+  droplevels()
+contrasts(d_when$paraphrase) = cbind("a.vs.every"=c(1,0,0),"the.vs.every"=c(0,0,1))
+contrasts(d_when$QuestionType) = cbind("emb.vs.sai"=c(1,0,0),"root.vs.sai"=c(0,0,1))
+
+# m.when = lmer(rating ~ cModalPresent*paraphrase*QuestionType + (1+paraphrase|tgrep_id), data=d_when)
+# saveRDS(m.when, "model-nocontext-when.rds")
+
+m.when <- readRDS("model-nocontext-when.rds")
+summary(m.when)
+
+# simple effects
+# m.when.simple = lmer(rating ~ paraphrase*cModalPresent-cModalPresent + (1+paraphrase|tgrep_id), data=d_when) 
+# summary(m.when.simple)
+```

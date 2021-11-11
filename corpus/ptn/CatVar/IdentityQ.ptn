@@ -1,0 +1,1 @@
+@WH >> (/^WH/ $ (/^S/=s1 << (/'s|'m|'re|am|is|are|was|were/=vb1 !.. (/^VB|RB|^JJ/ >> =s1 !< =vb1) !.. /^PP/ )))

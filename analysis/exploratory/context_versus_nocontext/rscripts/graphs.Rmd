@@ -1,0 +1,349 @@
+---
+title: "Exploratory analysis of context: Graphs"
+author: Morgan Moyer
+date: May 18, 2021
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
+library(ggplot2)
+library(lme4)
+library(lmerTest)
+library(multcomp) # not available for this version of R
+library(philentropy)
+library(stringr)
+library(textstem)
+library(tidyverse)
+theme_set(theme_bw())
+cbPalette <- c("#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73")
+this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(this.dir)
+source("../../../helpers.R")
+```
+
+```{r read in all the data, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
+context_root = read.csv("../../../03_experiment/data/normed.csv") 
+context_root$Task <- "context"
+context_root$VerbLemma <- ""
+context_root = context_root[,!(names(context_root) %in% c("X"))]
+
+context_emb = read.csv("../../../04_experiment/data/normed.csv") 
+context_emb$Task <- "context"
+context_emb = context_emb[,!(names(context_emb) %in% c("X"))]
+
+
+nocontext_root = read.csv("../../../05_experiment/data/normed_nocontext_root.csv")
+nocontext_root$VerbLemma <- ""
+nocontext_root$Task <- "nocontext"
+nocontext_root = nocontext_root[,!(names(nocontext_root) %in% c("X"))]
+
+nocontext_emb = read.csv("../../../06_experiment/data/normed_nocontext_embedded.csv")
+nocontext_emb$Task <- "nocontext"
+nocontext_emb = nocontext_emb[,!(names(nocontext_emb) %in% c("X"))]
+```
+
+```{r join all the dfs together, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
+context <- full_join(context_root,context_emb)
+nocontext <- full_join(nocontext_root,nocontext_emb)
+d <- full_join(context, nocontext)
+
+# sanity check the join
+nrow(context_root) + nrow(context_emb) + nrow(nocontext_root) + nrow(nocontext_emb)
+nrow(d)
+```
+
+# Plot the overall data with Task 
+
+```{r aggregate for overall}
+agr = d %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating), 
+            CILow = ci.low(normed_rating), 
+            CIHigh = ci.high(normed_rating)) %>%
+  mutate(YMin = mean_rating - CILow, 
+         YMax = mean_rating + CIHigh) %>%
+  drop_na()
+dodge = position_dodge(.9)
+```
+
+```{r}
+d %>% group_by(Task,paraphrase) %>% 
+  summarize(mean_rating = mean(normed_rating), 
+            sd = sd(normed_rating))
+```
+
+
+```{r plot overall}
+ggplot(agr,aes(x=paraphrase, y=mean_rating, alpha=Task, fill=paraphrase)) +
+  geom_bar(position=dodge,stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=dodge, show.legend = FALSE) +
+  # ggtitle("Mean rating for 'a' vs. 'every'") +
+  xlab("paraphrase") +
+  ylab("Mean rating") +
+  guides(fill=FALSE) +
+  guides(alpha=guide_legend(title="Task")) +
+  theme(legend.key.size = unit(0.3, "cm"),
+        legend.position = "top", # c(.5,1)
+        legend.direction = "horizontal",
+        legend.margin=margin(0,0,0,0),
+        legend.box.margin=margin(0,0,-5,-5),legend.spacing.y = unit(0.001, 'cm')) +
+    scale_fill_manual(values=cbPalette) +
+    scale_color_manual(values=cbPalette) +
+    scale_alpha_discrete(range = c(.5,1))
+# ggsave("../graphs/overall_Task.pdf",width=3,height=3)
+```
+
+```{r aggregate for Wh}
+agr = d %>%
+  group_by(Task,Wh,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating), 
+            CILow = ci.low(normed_rating), 
+            CIHigh = ci.high(normed_rating)) %>%
+  mutate(YMin = mean_rating - CILow, 
+         YMax = mean_rating + CIHigh) %>%
+  drop_na()
+dodge = position_dodge(.9)
+```
+
+
+```{r plot overall}
+agr$Wh <- factor(agr$Wh, levels=c("what","how","where","why","who","when"))
+
+ggplot(agr,aes(x=paraphrase, y=mean_rating, alpha=Task, fill=paraphrase)) +
+  geom_bar(position=dodge,stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=dodge, show.legend = FALSE) +
+  # ggtitle("Mean rating for 'a' vs. 'every'") +
+  facet_wrap(~Wh,ncol=2) +
+  xlab("paraphrase") +
+  ylab("Mean rating") +
+  guides(fill=FALSE) +
+  guides(alpha=guide_legend(title="Task")) +
+  theme(legend.key.size = unit(0.3, "cm"),
+        legend.position = "top", # c(.5,1)
+        legend.direction = "horizontal",
+        legend.margin=margin(0,0,0,0),
+        legend.box.margin=margin(0,0,-5,-5),legend.spacing.y = unit(0.001, 'cm')) +
+    scale_fill_manual(values=cbPalette) +
+    scale_color_manual(values=cbPalette) +
+    scale_alpha_discrete(range = c(.5,1))
+# ggsave("../graphs/overall_Task.pdf",width=3,height=3)
+```
+
+```{r aggregate for ModalPresent}
+agr = d %>%
+  group_by(Task,ModalPresent,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating), 
+            CILow = ci.low(normed_rating), 
+            CIHigh = ci.high(normed_rating)) %>%
+  mutate(YMin = mean_rating - CILow, 
+         YMax = mean_rating + CIHigh) %>%
+  drop_na()
+dodge = position_dodge(.9)
+```
+
+
+```{r plot modalpresent}
+ggplot(agr,aes(x=paraphrase, y=mean_rating, alpha=Task, fill=paraphrase)) +
+  geom_bar(position=dodge,stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=dodge, show.legend = FALSE) +
+  # ggtitle("Mean rating for 'a' vs. 'every'") +
+  facet_wrap(~ModalPresent) +
+  xlab("paraphrase") +
+  ylab("Mean rating") +
+  guides(fill=FALSE) +
+  guides(alpha=guide_legend(title="Task")) +
+  theme(legend.key.size = unit(0.3, "cm"),
+        legend.position = "top", # c(.5,1)
+        legend.direction = "horizontal",
+        legend.margin=margin(0,0,0,0),
+        legend.box.margin=margin(0,0,-5,-5),legend.spacing.y = unit(0.001, 'cm')) +
+    scale_fill_manual(values=cbPalette) +
+    scale_color_manual(values=cbPalette) +
+    scale_alpha_discrete(range = c(.5,1))
+# ggsave("../graphs/overall_Task.pdf",width=3,height=3)
+```
+
+
+# Denisity Plots
+
+```{r aggregate by-item, warning=FALSE, echo=FALSE, message=FALSE}
+agr = d %>%
+  group_by(Task, tgrep_id,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating),sd = sd(normed_rating))
+```
+
+## Mean Rating Denisity
+```{r mean rating density, warning=FALSE, echo=FALSE, message=FALSE}
+# look at differences in mean_rating
+ggplot(data = agr, aes(x = mean_rating, fill=Task, color=Task)) +
+  geom_density(alpha = .4) +
+  facet_grid(~paraphrase) +
+  scale_fill_manual(values=cbPalette) +
+  scale_color_manual(values=cbPalette)
+# ggsave("../graphs/denisty_context_ratings.pdf",width=7,height=2)
+```
+## Standard Deviation Denisty
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+# look at differences in SD 
+ggplot(data = agr, aes(x = sd, fill=Task, color=Task)) +
+  geom_density(alpha = .4) +
+  facet_grid(~paraphrase) +
+  scale_fill_manual(values=cbPalette) +
+  scale_color_manual(values=cbPalette)
+ggsave("../graphs/denisty_context_sd.pdf",width=7,height=2)
+```
+
+
+# plot mean differences with linguistic factors too
+
+## ModalPresent 
+```{r aggregate for denisty with factors, warning=FALSE, echo=FALSE, message=FALSE}
+# MODALPRESENT
+agr = d %>%
+  group_by(Task,ModalPresent,tgrep_id,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating),sd = sd(normed_rating))
+```
+
+### Mean Rating
+```{r plot mean rating density with factors, warning=FALSE, echo=FALSE, message=FALSE}
+# look at differences in mean_rating
+ggplot(data = agr, aes(x = mean_rating, fill=Task, color=Task)) +
+  geom_density(alpha = .4) +
+  facet_grid(ModalPresent~paraphrase) +
+  scale_fill_manual(values=cbPalette) +
+  scale_color_manual(values=cbPalette)
+ggsave("../graphs/denisty_context_MP_ratings.pdf",width=6,height=3)
+```
+
+### Standard Deviations
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+# look at differences in SD 
+ggplot(data = agr, aes(x = sd, fill=Task, color=Task)) +
+  geom_density(alpha = .4) +
+  facet_grid(ModalPresent~paraphrase) +
+  scale_fill_manual(values=cbPalette) +
+  scale_color_manual(values=cbPalette)
+# ggsave("../graphs/denisty_context_MP_sd.pdf",width=6,height=3)
+```
+
+## Wh-Word
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+# WH
+agr = d %>%
+  group_by(Task,Wh,tgrep_id,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating),sd = sd(normed_rating))
+```
+
+```{r}
+# look at differences in mean_rating
+ggplot(data = agr, aes(x = mean_rating, fill=Task, color=Task)) +
+  geom_density(alpha = .4) +
+  facet_grid(Wh~paraphrase) +
+  scale_fill_manual(values=cbPalette) +
+  scale_color_manual(values=cbPalette)
+```
+
+
+# Plot mean by-item differences, ordered by the size of the difference between Task
+
+## Overall Relative difference between Context and NoContext Experiments
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+diffs = d %>%
+  group_by(Task,paraphrase,tgrep_id) %>%
+  summarize(mean_rating = mean(normed_rating)) %>%
+  pivot_wider(names_from=Task,values_from=mean_rating) %>%
+  group_by(tgrep_id,paraphrase) %>%
+  summarize(difference = context-nocontext)
+
+View(d[,d$tgrep_id=="100218:4"])
+```
+
+
+## Look at differnces due to factors
+```{r aggregate over differences with factors}
+diffs_agr <- diffs %>% 
+  left_join(d,by=c("tgrep_id","paraphrase")) %>% 
+  select(tgrep_id,difference,ModalPresent,Wh,paraphrase) %>% 
+  unique()
+
+
+View(diffs_agr)
+```
+
+```{r}
+diffs_agr$Wh <- factor(agr$Wh, levels=c("what","how","where","why","who","when"))
+
+ggplot(diffs_agr,aes(x=paraphrase, y=mean_difference, alpha=ModalPresent, fill=paraphrase)) +
+  geom_bar(position="dodge",stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=position_dodge(0.9)) +
+  facet_wrap(~Wh,ncol=2) +
+  xlab("Paraphrase") +
+  ylab("Mean Difference in rating Between Context and NoContext") +
+  guides(fill=FALSE) +
+  guides(alpha=guide_legend(title="ModalPresent")) +
+  theme(legend.key.size = unit(0.3, "cm"),
+        legend.position = "top", # c(.5,1)
+        legend.direction = "horizontal",
+        legend.margin=margin(0,0,0,0),
+        legend.box.margin=margin(0,0,-5,-5),legend.spacing.y = unit(0.001, 'cm')) +
+    scale_fill_manual(values=cbPalette) +
+    scale_color_manual(values=cbPalette) +
+    scale_alpha_discrete(range = c(.5,1))
+```
+
+
+
+## Mention-Some
+
+### Absolute difference
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+agr = d %>%
+  filter(paraphrase == "a") %>%
+  group_by(Task,tgrep_id) %>%
+  summarize(mean_rating = mean(normed_rating)) %>%
+  pivot_wider(names_from=Task,values_from=mean_rating) %>%
+  group_by(tgrep_id) %>%
+  summarize(difference = abs(context-nocontext))
+```
+
+
+### Relative difference between Context and NoContext Experiments
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+agr = d %>%
+  filter(paraphrase == "a") %>%
+  group_by(Task,tgrep_id) %>%
+  summarize(mean_rating = mean(normed_rating)) %>%
+  pivot_wider(names_from=Task,values_from=mean_rating) %>%
+  group_by(tgrep_id) %>%
+  summarize(difference = context-nocontext)
+```
+
+
+
+## Mention-All
+
+### Absolute difference between Context and NoContext
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+agr = d %>%
+  filter(paraphrase == "every") %>%
+  group_by(Task,tgrep_id) %>%
+  summarize(mean_rating = mean(normed_rating)) %>%
+  pivot_wider(names_from=Task,values_from=mean_rating) %>%
+  group_by(tgrep_id) %>%
+  summarize(difference = abs(context-nocontext))
+```
+
+
+### Relative difference between Context and NoContext Experiments
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+agr = d %>%
+  filter(paraphrase == "every") %>%
+  group_by(Task,tgrep_id) %>%
+  summarize(mean_rating = mean(normed_rating)) %>%
+  pivot_wider(names_from=Task,values_from=mean_rating) %>%
+  group_by(tgrep_id) %>%
+  summarize(difference = context-nocontext)
+
+```
+

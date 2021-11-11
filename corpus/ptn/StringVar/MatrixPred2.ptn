@@ -1,0 +1,1 @@
+@WH >> (/^WH/ >> /^S/=s1 >> (/^S/=s2 $ (/^VB|^BE|^JJ|^RB/=print ,, (/^VB|^BE/ >> =s1 $ /^NP-SBJ/=np1) ,, (=np1 >> =s1)) >> =s1))

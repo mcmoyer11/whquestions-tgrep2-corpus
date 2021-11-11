@@ -1,0 +1,1 @@
+@WH >> (/^S/ >> /TOP/=t1 [!>> (/^V/ >> =t1) | !,, (/^N/ >> =t1)] ?= /SBAR-NOM-SBJ|SBAR-SBJ/)

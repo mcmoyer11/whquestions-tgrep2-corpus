@@ -1,0 +1,1 @@
+@WH >> (/^WH/ $ (/^S/ << (/^VP/ << /all|every|some|one|any|most|least|more|most|much/=print)))

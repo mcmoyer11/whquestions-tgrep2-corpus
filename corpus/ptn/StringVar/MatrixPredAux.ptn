@@ -1,0 +1,1 @@
+@WH >> (/^WH/ > (/^SBAR/ $ (/^VB|^BE|MD/=vp ))) >> (/S/ < (/VP|ADVP-PRD/ < (/^VB|^BE|^MD/ < /am|'m|is|'s|are|was|were|'re|do|have|'ve|has|had|can|could|shall|should|will|'ll|would|may|might|must/=print)))

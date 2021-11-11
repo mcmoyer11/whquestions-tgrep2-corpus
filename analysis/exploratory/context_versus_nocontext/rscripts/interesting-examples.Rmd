@@ -1,0 +1,1105 @@
+---
+title: "Exploratory analysis of context: Examples"
+author: Morgan Moyer
+date: October 19, 2021
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
+library(ggplot2)
+library(lme4)
+library(lmerTest)
+library(multcomp) # not available for this version of R
+library(philentropy)
+library(stringr)
+library(textstem)
+library(tidyverse)
+theme_set(theme_bw())
+cbPalette <- c("#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73")
+this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(this.dir)
+source("../../../helpers.R")
+```
+
+```{r read in all the data, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
+context_root = read.csv("../../../03_experiment/data/normed.csv") 
+context_root$Task <- "context"
+context_root$VerbLemma <- ""
+context_root = context_root[,!(names(context_root) %in% c("X"))]
+
+context_emb = read.csv("../../../04_experiment/data/normed.csv") 
+context_emb$Task <- "context"
+context_emb = context_emb[,!(names(context_emb) %in% c("X"))]
+
+
+nocontext_root = read.csv("../../../05_experiment/data/normed_nocontext_root.csv")
+nocontext_root$VerbLemma <- ""
+nocontext_root$Task <- "nocontext"
+nocontext_root = nocontext_root[,!(names(nocontext_root) %in% c("X"))]
+
+nocontext_emb = read.csv("../../../06_experiment/data/normed_nocontext_embedded.csv")
+nocontext_emb$Task <- "nocontext"
+nocontext_emb = nocontext_emb[,!(names(nocontext_emb) %in% c("X"))]
+```
+
+```{r join all the dfs together, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
+context <- full_join(context_root,context_emb)
+nocontext <- full_join(nocontext_root,nocontext_emb)
+d <- full_join(context, nocontext)
+
+# sanity check the join
+nrow(context_root) + nrow(context_emb) + nrow(nocontext_root) + nrow(nocontext_emb)
+nrow(d)
+```
+
+```{r bring in corpus to see the context, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
+corp = read.csv("../../../../corpus/analysis/swbd_contexts.csv")
+names(corp)[names(corp) == "TGrepID"] <- "tgrep_id"
+```
+
+
+# Relative difference between Context and NoContext Experiments
+
+
+## For A-paraphrase
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+agr = d %>%
+  filter(paraphrase == "a") %>%
+  group_by(Task,tgrep_id) %>%
+  summarize(mean_rating = mean(normed_rating)) %>%
+  pivot_wider(names_from=Task,values_from=mean_rating) %>%
+  group_by(tgrep_id) %>%
+  summarize(difference = context-nocontext) %>% 
+  # arrange in descending order to see the high positive difference
+  arrange(desc(difference)) 
+```
+
+### High Positive Difference
+
+Examples for which the mean rating for 'a' was higher in the Context experiment than in the NoContext experiment. 
+
+1. The first biggest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[1,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[1,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[1,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+2. The second biggest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[2,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[2,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[2,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+
+3. The third biggest.
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[3,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[3,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[3,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+4. The fourth biggest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[4,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[4,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[4,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+
+5. The fifth biggest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[5,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[5,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[5,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+### High Negative Difference
+Examples for which the mean rating for 'a' was higher in the NoContext experiment than in the Context experiment. 
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+agr = d %>%
+  filter(paraphrase == "a") %>%
+  group_by(Task,tgrep_id) %>%
+  summarize(mean_rating = mean(normed_rating)) %>%
+  pivot_wider(names_from=Task,values_from=mean_rating) %>%
+  group_by(tgrep_id) %>%
+  summarize(difference = context-nocontext) %>% 
+  # arrange in ascending order to see the high negative difference
+  arrange(difference) 
+```
+
+1. The first biggest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[1,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[1,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[1,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+2. The second biggest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[2,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[2,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[2,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+
+3. The third biggest.
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[3,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[3,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[3,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+4. The fourth biggest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[4,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[4,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[4,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+
+5. The fifth biggest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[5,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[5,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[5,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+## For Every-paraphrase
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+agr = d %>%
+  filter(paraphrase == "every") %>%
+  group_by(Task,tgrep_id) %>%
+  summarize(mean_rating = mean(normed_rating)) %>%
+  pivot_wider(names_from=Task,values_from=mean_rating) %>%
+  group_by(tgrep_id) %>%
+  summarize(difference = context-nocontext) %>% 
+  # arrange in descending order to see the high positive difference
+  arrange(desc(difference)) 
+```
+
+### High Positive Difference
+
+Examples for which the mean rating for 'a' was higher in the Context experiment than in the NoContext experiment. 
+
+1. The first biggest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[1,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[1,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[1,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+2. The second biggest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[2,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[2,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[2,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+
+3. The third biggest.
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[3,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[3,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[3,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+4. The fourth biggest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[4,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[4,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[4,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+
+5. The fifth biggest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[5,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[5,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[5,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+### High Negative Difference
+Examples for which the mean rating for 'a' was higher in the NoContext experiment than in the Context experiment. 
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+agr = d %>%
+  filter(paraphrase == "every") %>%
+  group_by(Task,tgrep_id) %>%
+  summarize(mean_rating = mean(normed_rating)) %>%
+  pivot_wider(names_from=Task,values_from=mean_rating) %>%
+  group_by(tgrep_id) %>%
+  summarize(difference = context-nocontext) %>% 
+  # arrange in ascending order to see the high negative difference
+  arrange(difference) 
+```
+
+1. The first biggest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[1,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[1,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[1,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+2. The second biggest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[2,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[2,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[2,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+
+3. The third biggest.
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[3,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[3,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[3,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+4. The fourth biggest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[4,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[4,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[4,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+
+5. The fifth biggest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[5,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[5,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[5,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+## For The-paraphrase
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+agr = d %>%
+  filter(paraphrase == "the") %>%
+  group_by(Task,tgrep_id) %>%
+  summarize(mean_rating = mean(normed_rating)) %>%
+  pivot_wider(names_from=Task,values_from=mean_rating) %>%
+  group_by(tgrep_id) %>%
+  summarize(difference = context-nocontext) %>% 
+  # arrange in descending order to see the high positive difference
+  arrange(desc(difference)) 
+```
+
+### High Positive Difference
+
+Examples for which the mean rating for 'a' was higher in the Context experiment than in the NoContext experiment. 
+
+1. The first biggest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[1,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[1,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[1,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+2. The second biggest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[2,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[2,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[2,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+
+3. The third biggest.
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[3,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[3,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[3,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+4. The fourth biggest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[4,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[4,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[4,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+
+5. The fifth biggest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[5,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[5,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[5,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+### High Negative Difference
+Examples for which the mean rating for 'a' was higher in the NoContext experiment than in the Context experiment. 
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+agr = d %>%
+  filter(paraphrase == "the") %>%
+  group_by(Task,tgrep_id) %>%
+  summarize(mean_rating = mean(normed_rating)) %>%
+  pivot_wider(names_from=Task,values_from=mean_rating) %>%
+  group_by(tgrep_id) %>%
+  summarize(difference = context-nocontext) %>% 
+  # arrange in ascending order to see the high negative difference
+  arrange(difference) 
+```
+
+1. The first biggest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[1,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[1,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[1,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+2. The second biggest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[2,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[2,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[2,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+
+3. The third biggest.
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[3,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[3,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[3,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+4. The fourth biggest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[4,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[4,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[4,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+
+5. The fifth biggest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[5,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[5,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[5,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+# Examples with the smallest difference between the two tasks
+
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+agr = d %>%
+  filter(paraphrase == "a") %>%
+  group_by(Task,tgrep_id) %>%
+  summarize(mean_rating = mean(normed_rating)) %>%
+  pivot_wider(names_from=Task,values_from=mean_rating) %>%
+  group_by(tgrep_id) %>%
+  summarize(difference = abs(context-nocontext)) %>% 
+  arrange(difference) 
+```
+
+1. The first smallest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[1,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[1,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[1,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+
+2. The second smallest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[2,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[2,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[2,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+
+3. The third smallest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[3,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[3,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[3,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+4. The fourth smallest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[4,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[4,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[4,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+5. The fifth smallest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[5,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[5,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[5,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+
+
+
+# Look at absolute differences between Context and NoContext
+
+Ignoring the directionality of the difference, let's see which examples 
+change the most between the two tasks.
+
+## First for A-Paraphrase
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+agr = d %>%
+  filter(paraphrase == "a") %>%
+  group_by(Task,tgrep_id) %>%
+  summarize(mean_rating = mean(normed_rating)) %>%
+  pivot_wider(names_from=Task,values_from=mean_rating) %>%
+  group_by(tgrep_id) %>%
+  summarize(difference = abs(context-nocontext)) %>% 
+  arrange(desc(difference)) 
+```
+
+1. The first biggest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[1,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[1,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[1,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+2. The second biggest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[2,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[2,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[2,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+
+3. The third biggest.
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[3,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[3,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[3,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+4. The fourth biggest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[4,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[4,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[4,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+
+5. The fifth biggest.
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == agr[5,]$tgrep_id) %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[5,]$tgrep_id) %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == agr[5,]$tgrep_id) %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```

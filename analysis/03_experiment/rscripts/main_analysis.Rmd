@@ -1,0 +1,249 @@
+---
+title: 'Experiment 1a: Analysis of Root Questions, Context'
+author: "mcmoyer"
+date: "September 20, 2021"
+---
+
+```{r setup, include=FALSE, warning=FALSE, echo=FALSE}
+library(tidyverse)
+library(lme4)
+library(lmerTest)
+library(multcomp) # not available for this version of R
+theme_set(theme_bw())
+
+this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(this.dir)
+source("../../helpers.R")
+
+# set the color palette for color-blind
+cbPalette <- c("#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73")
+
+# Read the data in
+d = read.csv("../data/normed.csv")
+```
+
+
+```{r, include=FALSE, warning=FALSE, echo=FALSE}
+d$ModalPresent = as.factor(d$ModalPresent)
+d$Wh = as.factor(d$Wh)
+d$paraphrase = as.factor(d$paraphrase)
+contrasts(d$paraphrase)
+```
+
+
+```{r, include=FALSE, warning=FALSE, echo=FALSE}
+d.ms.ma = d %>%
+  filter(paraphrase %in% c("a","every")) %>%
+  # hand-code paraphrase so mean-centering is more interpretatble 
+  # (otherwise, "every" will be 1 and "a" will be 0 by default)
+  mutate(paraphrase.dc = recode(paraphrase, "a" = 1, "every" = 0) ) %>%
+  # mean-center
+  mutate(cParaphrase = as.numeric(paraphrase.dc)-mean(as.numeric(paraphrase.dc))) %>%
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>%
+  droplevels()
+# Set the reference levels
+contrasts(d.ms.ma$Wh) = cbind("how.vs.when"=c(0,1,0,0,0,0),"what.vs.when"=c(1,0,0,0,0,0),
+                "where.vs.when"=c(0,0,0,1,0,0),"who.vs.when"=c(0,0,0,0,1,0),
+                "why.vs.when"=c(0,0,0,0,0,1))
+```
+
+# Is rating modulared by Paraphrase, Wh and ModalPresent?
+- Yes, significant three-way interactions
+```{r}
+
+# m.ms.ma.full = lmer(normed_rating ~ cParaphrase*Wh*cModalPresent + (1+cParaphrase+Wh+cModalPresent|workerid) + (1+cParaphrase|tgrep_id), data=d.ms.ma)
+# saveRDS(m.ms.ma.full, "model-msma-full.rds")
+
+m.ms.ma.full <- readRDS("model-msma-full.rds")
+summary(m.ms.ma.full)
+```
+
+# Does paraphase predict rating?
+- No.
+```{r}
+# m.ms.ma = lmer(normed_rating ~ cParaphrase + (1+cParaphrase|workerid) + (1+cParaphrase|tgrep_id), data=d.ms.ma)
+# saveRDS(m.ms.ma, "model-msma.rds")
+
+m.ms.ma <- readRDS("model-msma.rds")
+summary(m.ms.ma)
+# confint(m.ms.ma)
+```
+
+# Are MS ratings modulated by linguistic form factors?
+- Yes: all 2-way interactions significant
+- overall 
+```{r}
+d.ms = d %>% 
+  filter(paraphrase=="a") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>%
+  droplevels()
+# Set the reference levels
+contrasts(d.ms$Wh) = cbind("how.vs.when"=c(0,1,0,0,0,0),"what.vs.when"=c(1,0,0,0,0,0),
+                "where.vs.when"=c(0,0,0,1,0,0),"who.vs.when"=c(0,0,0,0,1,0),
+                "why.vs.when"=c(0,0,0,0,0,1))
+
+# m.ms = lmer(normed_rating ~ cModalPresent*Wh + (1+Wh+cModalPresent|workerid) + (1|tgrep_id), data=d.ms)
+# saveRDS(m.ms, "model-ms.rds")
+
+m.ms <- readRDS("model-ms.rds")
+summary(m.ms)
+
+```
+
+
+# Wh-word sub-models
+
+## What
+```{r}
+d_what = d.ms.ma %>% 
+  filter(Wh=="what") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>% 
+  mutate(cParaphrase = as.numeric(paraphrase.dc)-mean(as.numeric(paraphrase.dc))) %>% 
+  droplevels()
+
+m.what = lmer(normed_rating ~ cModalPresent*cParaphrase + (1+cParaphrase+cModalPresent|workerid) + (1+cParaphrase|tgrep_id), data=d_what) 
+summary(m.what)
+
+# m.what.simple = lmer(normed_rating ~ paraphrase*cModalPresent-cModalPresent + (1+paraphrase+cModalPresent|workerid) + (1+paraphrase|tgrep_id), data=d_what)
+# summary(m.what.simple)
+```
+
+## How
+```{r}
+d_how = d.ms.ma %>% 
+  filter(Wh=="how") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>% 
+  mutate(cParaphrase = as.numeric(paraphrase.dc)-mean(as.numeric(paraphrase.dc))) %>% 
+  droplevels()
+
+m.how = lmer(normed_rating ~ cModalPresent*cParaphrase + (1+cParaphrase+cModalPresent|workerid) + (1+cParaphrase|tgrep_id), data=d_how) 
+summary(m.how)
+
+m.how.simple = lmer(normed_rating ~ paraphrase*cModalPresent-cModalPresent + (1+paraphrase|tgrep_id), data=d_how) 
+summary(m.how.simple)
+```
+
+## Where
+```{r where model}
+d_where = d.ms.ma %>% 
+  filter(Wh=="where") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>% 
+  mutate(cParaphrase = as.numeric(paraphrase.dc)-mean(as.numeric(paraphrase.dc))) %>% 
+  droplevels()
+
+m.where = lmer(normed_rating ~ cModalPresent*cParaphrase + (1+cParaphrase+cModalPresent|workerid) + (1+cParaphrase|tgrep_id), data=d_where) 
+summary(m.where)
+
+m.where.simple = lmer(normed_rating ~ cParaphrase*cModalPresent-cModalPresent + (1+cParaphrase+cModalPresent|workerid) + (1+cParaphrase|tgrep_id), data=d_where)
+summary(m.where.simple)
+```
+
+## WHY
+```{r why model}
+d_why = d.ms.ma %>% 
+  filter(Wh=="why") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>% 
+  mutate(cParaphrase = as.numeric(paraphrase.dc)-mean(as.numeric(paraphrase.dc))) %>% 
+  droplevels()
+
+m.why = lmer(normed_rating ~ cModalPresent*cParaphrase + (1+cParaphrase+cModalPresent|workerid) + (1+cParaphrase|tgrep_id), data=d_why) 
+summary(m.why)
+
+m.why.simple = lmer(normed_rating ~ cParaphrase*cModalPresent-cModalPresent + (1+cParaphrase+cModalPresent|workerid) + (1+cParaphrase|tgrep_id), data=d_why) 
+summary(m.why.simple)
+```
+
+## Who
+```{r who model}
+d_who = d.ms.ma %>% 
+  filter(Wh=="who") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>% 
+  mutate(cParaphrase = as.numeric(paraphrase.dc)-mean(as.numeric(paraphrase.dc))) %>% 
+  droplevels()
+
+m.who = lmer(normed_rating ~ cModalPresent*cParaphrase + (1+cParaphrase|workerid) + (1+cParaphrase|tgrep_id), data=d_who) 
+summary(m.who)
+
+m.who.simple = lmer(normed_rating ~ cParaphrase*cModalPresent-cModalPresent + (1+cParaphrase|workerid) + (1+cParaphrase|tgrep_id), data=d_who) 
+summary(m.who.simple)
+```
+
+## When
+```{r when model}
+# have to use less random effects structure
+d_when = d.ms.ma %>% 
+  filter(Wh=="when") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>% 
+  mutate(cParaphrase = as.numeric(paraphrase.dc)-mean(as.numeric(paraphrase.dc))) %>% 
+  droplevels()
+
+m.when = lmer(normed_rating ~ cModalPresent*cParaphrase + (1+cParaphrase|tgrep_id), data=d_when) 
+summary(m.when)
+
+# simple effects
+m.when.simple = lmer(normed_rating ~ cParaphrase*cModalPresent-cModalPresent + (1+cParaphrase|tgrep_id), data=d_when) 
+summary(m.when.simple)
+```
+
+
+
+
+# Are who-questions MA biased?
+
+```{r}
+d.ms.ma.who = d.ms.ma %>% 
+  filter((Wh == "who")) %>% 
+  mutate(cParaphrase = as.numeric(paraphrase.dc)-mean(as.numeric(paraphrase.dc))) %>%
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>%
+  droplevels()
+
+m.ms.ma.who = lmer(normed_rating ~ cParaphrase + (1+cParaphrase|workerid) + (1|tgrep_id), data=d.ms.ma.who)
+# saveRDS(m.ms.ma.who, "model-msmawho.rds")
+# 
+# m.ms.ma.who <- readRDS("model-ms.rds")
+summary(m.ms.ma.who)
+# confint(m.ms.ma.who)
+```
+
+# Are MA ratings modulated by linguistic form factors?
+- some differences based on WH-word
+```{r}
+d.ma = d %>% 
+  filter(paraphrase=="every") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>%
+  droplevels()
+# Set the reference levels
+contrasts(d.ma$Wh) = cbind("how.vs.when"=c(0,1,0,0,0,0),"what.vs.when"=c(1,0,0,0,0,0),
+                "where.vs.when"=c(0,0,0,1,0,0),"who.vs.when"=c(0,0,0,0,1,0),
+                "why.vs.when"=c(0,0,0,0,0,1))
+
+# m.ma = lmer(normed_rating ~ cModalPresent*Wh + (1+Wh+cModalPresent|workerid) + (1|tgrep_id), data=d.ma)
+# saveRDS(m.ma, "model-ma.rds")
+
+m.ma <- readRDS("model-ma.rds")
+summary(m.ma)
+```
+
+
+# Other Models
+
+```{r, eval = FALSE, echo = FALSE}
+# Set the reference levels
+contrasts(d$Wh) = cbind("how.vs.when"=c(0,1,0,0,0,0),"what.vs.when"=c(1,0,0,0,0,0),
+                "where.vs.when"=c(0,0,0,1,0,0),"who.vs.when"=c(0,0,0,0,1,0),
+                "why.vs.when"=c(0,0,0,0,0,1))
+
+contrasts(d$paraphrase) = cbind("a.vs.every"=c(1,0,0),"the.vs.every"=c(0,0,1))
+
+centered = cbind(d,myCenter(d["ModalPresent"]))
+```
+
+## full model with random slopes and intercepts
+```{r full model, eval = FALSE, echo = FALSE}
+# m.full = lmer(normed_rating ~ cModalPresent*Wh*paraphrase + (1+paraphrase+Wh+cModalPresent|workerid) + (1+paraphrase|tgrep_id), data=centered,REML=FALSE) 
+# saveRDS(m.full, "model-context-root-full.rds")
+
+m.full <- readRDS("model-context-root-full.rds")
+summary(m.full)
+```
+

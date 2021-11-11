@@ -1,0 +1,1 @@
+@WH >> (/^WH/ $ (/^S/ << (/^VB|^BE/ !, /^VB|^BE/ $ (/^RB/ < /not|n't/=print))))

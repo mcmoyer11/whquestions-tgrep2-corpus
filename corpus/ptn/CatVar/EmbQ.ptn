@@ -1,0 +1,1 @@
+@WH >> (/^WH/ > (/^SBAR/ [$ /^VB|^JJ|^RB/ | > (/^PP/ $ /^JJ|^VB|^RB/)] !> /^NP/ !$ /^NN/ != /SBAR-TMP|SBAR-LOC/ != /SBAR-NOM-SBJ|SBAR-NOM|SBAR-SBJ/))
