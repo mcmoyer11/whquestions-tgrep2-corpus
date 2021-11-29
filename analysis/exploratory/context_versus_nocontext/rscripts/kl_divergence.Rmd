@@ -94,28 +94,51 @@ d.kls <- full_join(kls.nocontext,kls.context)
 ```
 
 
+## Plot the KLD between context and no context
+
+### Overall
+```{r}
+agr <- d.kls %>% 
+  group_by(Task) %>% 
+  summarize(mean_kld = mean(kld), 
+            CILow = ci.low(kld), 
+            CIHigh = ci.high(kld)) %>%
+  mutate(YMin = mean_kld - CILow, 
+         YMax = mean_kld + CIHigh) %>%
+  drop_na()
+dodge = position_dodge(.9)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+ggplot(data = agr, aes(x=Task, y = mean_kld, fill=Task)) +
+  geom_bar(position="dodge",stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=dodge, show.legend = FALSE) +
+  # ggtitle("Mean rating for 'a' vs. 'every'") +
+  xlab("Task") +
+  ylab("Mean KL Divergence") +
+  guides(fill=FALSE) +
+  theme(legend.key.size = unit(0.3, "cm"),
+        legend.position = "top", # c(.5,1)
+        legend.direction = "horizontal",
+        legend.margin=margin(0,0,0,0),
+        legend.box.margin=margin(0,0,-5,-5),legend.spacing.y = unit(0.001, 'cm')) +
+    scale_fill_manual(values=cbPalette) +
+    scale_color_manual(values=cbPalette)
+# ggsave("../graphs/mean_kld_context.pdf",width=3,height=3)
+```
+
+
+### Factors
+
 ```{r factors, warning=FALSE, echo=FALSE, message=FALSE}
 # look at linguistic factors
 d.factors <- unique(d[,c("tgrep_id","ModalPresent","Wh","QuestionType")])
 kls.factors <- left_join(d.kls,d.factors,by="tgrep_id")
 ```
 
-## Plot the KLD between context and no context
-
-### Overall
-```{r, warning=FALSE, echo=FALSE, message=FALSE}
-ggplot(data = d.kls, aes(x=Task, y = kld, fill=Task)) +
-  geom_bar(stat="identity") +
-  scale_fill_manual(values=cbPalette) +
-  scale_color_manual(values=cbPalette)
-# ggsave("graphs/denisty_kld_context.pdf",width=6,height=3)
-```
-
-
-### Factors
 ```{r, warning=FALSE, echo=FALSE, message=FALSE}
 agr <- kls.factors %>% 
-  group_by(Task, ModalPresent,Wh) %>% 
+  group_by(Task,ModalPresent,Wh) %>% 
   summarize(mean_kld = mean(kld), 
             CILow = ci.low(kld), 
             CIHigh = ci.high(kld)) %>%

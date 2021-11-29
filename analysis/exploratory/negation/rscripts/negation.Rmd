@@ -55,7 +55,6 @@ corp = read.table("../../../../corpus/results/swbd.tab",sep="\t",header=T,quote=
 names(corp)
 corp <- corp[,c("Item_ID","MatrixNegPresent","MatrixNegation","EmbeddedNegPresent","EmbeddedNegation")]
 names(corp)[names(corp) == "Item_ID"] <- "tgrep_id"
-table(d$MatrixNegPresent)
 ```
 
 ```{r combine everything together}
@@ -68,6 +67,7 @@ nrow(d)
 ```
 
 ```{r recode the empty cells as 'no'}
+table(d$MatrixNegPresent)
 d$MatrixNegPresent[d$MatrixNegPresent != "yes"] = "no"
 ```
 
@@ -84,6 +84,39 @@ d$MatrixNegPresent[d$MatrixNegation == "nothing"] = "no"
 d$MatrixNegPresent[d$MatrixNegation == "whatnot"] = "no"
 
 table(d$MatrixNegPresent)
+```
+
+```{r}
+# Make everything into a factor
+d$workerid = as.factor(d$workerid)
+d$tgrep_id = as.factor(d$tgrep_id)
+d$paraphrase = as.factor(d$paraphrase)
+d$MatrixNegPresent = as.factor(d$MatrixNegPresent)
+```
+
+```{r}
+d_eq_msma <- d %>% 
+  filter(paraphrase %in% c("a","every"),
+         VerbLemma != "" ) %>% 
+  mutate(paraphrase.dc = recode(paraphrase, "a" = 1, "every" = 0) ) %>%
+  mutate(cParaphrase = as.numeric(paraphrase.dc)-mean(as.numeric(paraphrase.dc))) %>%
+  # mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>%
+  mutate(cNegation = as.numeric(MatrixNegPresent)-mean(as.numeric(MatrixNegPresent))) %>%
+  # mutate(cTask = as.numeric(Task) - mean(as.numeric(Task))) %>%
+  droplevels()
+nrow(d_eq_msma)
+```
+
+# Does negation significantly affect paraphrase?
+- i.e., are MS readings really only licesnsed with negatuion?
+- answer: not significant.
+
+```{r model}
+# m <- lmer(normed_rating ~ cParaphrase*cNegation + (1+cParaphrase|tgrep_id) + (1+cParaphrase+cNegation|workerid), data = d_eq_msma)
+# saveRDS(m, "../models/negation.rds")
+
+m <- readRDS("../models/negation.rds")
+summary(m)
 ```
 
 
@@ -116,7 +149,7 @@ ggplot(agr,aes(x=paraphrase, y=mean_rating, alpha=MatrixNegPresent, fill=paraphr
     scale_fill_manual(values=cbPalette) +
     scale_color_manual(values=cbPalette) +
     scale_alpha_discrete(range = c(.5,1))
-# ggsave("../graphs/overall_negation.pdf",width=6,height=3)
+# ggsave("../graphs/overall_negation.pdf",width=3,height=3)
 
 ```
 
@@ -227,8 +260,44 @@ ggplot(agr,aes(x=paraphrase, y=mean_rating, alpha=MatrixNegPresent, fill=paraphr
     scale_color_manual(values=cbPalette) +
     scale_alpha_discrete(range = c(.5,1))
 
-ggsave("../graphs/overall_negation_eq.pdf",width=3,height=6)
+# ggsave("../graphs/overall_negation_eq.pdf",width=3,height=3)
 
+```
+
+
+## Task and negation
+
+```{r aggregate for taskxnegation}
+agr = d %>%
+  filter(VerbLemma != "") %>% 
+  group_by(paraphrase,Task,MatrixNegPresent) %>%
+  summarize(mean_rating = mean(normed_rating), 
+            CILow = ci.low(normed_rating), 
+            CIHigh = ci.high(normed_rating)) %>%
+  mutate(YMin = mean_rating - CILow, 
+         YMax = mean_rating + CIHigh) %>%
+  drop_na()
+```
+
+```{r graph task x negation}
+ggplot(agr,aes(x=paraphrase, y=mean_rating, alpha=MatrixNegPresent, fill=paraphrase)) +
+  geom_bar(position="dodge",stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=position_dodge(0.9)) +
+  facet_wrap(~Task) +
+  xlab("Paraphrase") +
+  ylab("Mean rating") +
+  guides(fill=FALSE) +
+  guides(alpha=guide_legend(title="MatrixNegPresent")) +
+  theme(legend.key.size = unit(0.3, "cm"),
+        legend.position = "top", # c(.5,1)
+        legend.direction = "horizontal",
+        legend.margin=margin(0,0,0,0),
+        legend.box.margin=margin(0,0,-5,-5),legend.spacing.y = unit(0.001, 'cm')) +
+    scale_fill_manual(values=cbPalette) +
+    scale_color_manual(values=cbPalette) +
+    scale_alpha_discrete(range = c(.5,1))
+
+# ggsave("../graphs/task_negation_eq.pdf",width=4,height=3)
 ```
 
 
@@ -267,7 +336,7 @@ ggplot(agr,aes(x=paraphrase, y=mean_rating, alpha=MatrixNegPresent, fill=paraphr
     scale_color_manual(values=cbPalette) +
     scale_alpha_discrete(range = c(.5,1))
 
-ggsave("../graphs/modxwh_negation_eq.pdf",width=3,height=6)
+# ggsave("../graphs/modxwh_negation_eq.pdf",width=3,height=6)
 ```
 
 
@@ -284,12 +353,11 @@ View(verb_count)
 ```{r aggregate and subset to specific verbs}
 agr = d %>%
   # Most frequent
-  filter(VerbLemma %in% c("know","see","wonder","understand","be","understand","surprise","predict","tell","figure","say","think","sure","learn","remember","forget")) %>%
+  filter(VerbLemma %in% c("know","see","wonder","be","understand","surprise","predict","tell","figure","say","think","sure","learn","remember","forget")) %>%
   group_by(paraphrase,VerbLemma,MatrixNegPresent) %>%
   summarize(mean_rating = mean(normed_rating), CILow = ci.low(normed_rating), CIHigh = ci.high(normed_rating)) %>%
   mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
   drop_na()
-
 ```
 
 ```{r graph}
@@ -311,7 +379,7 @@ ggplot(agr,aes(x=paraphrase, y=mean_rating, alpha=MatrixNegPresent, fill=paraphr
     scale_color_manual(values=cbPalette) +
     scale_alpha_discrete(range = c(.5,1))
 
-# ggsave("../graphs/matrixverbs_threotical.pdf",width=10,height=10)
+# ggsave("../graphs/matrixverbs_negation_theoretical.pdf",width=10,height=10)
 ```
 
 

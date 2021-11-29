@@ -57,11 +57,48 @@ nrow(context_root) + nrow(context_emb) + nrow(nocontext_root) + nrow(nocontext_e
 names(d)
 ```
 
+```{r look around and refine}
+table(d$ModalPresent)
+```
+
+
+The 'd cases seem to all be 'did', not real modals. So we should remove them.
+```{r look around and refine}
+# look at the 'd cases
+t <- d %>% filter(Modal == "'d")
+```
+
+
+```{r remove d}
+# remove 'd
+d$ModalPresent[d$Modal == "'d"] = "no"
+```
+
+
+```{r rename}
+d$Modal[d$Modal == "'ll"] = "will"
+d$Modal[d$Modal == "ca"] = "can"
+```
+
+
+
+```{r look at unlabeled modals}
+tt <- d %>% 
+  filter((ModalPresent == "yes") & (Modal == ""))
+
+table(tt$Finite)
+```
+
+
+```{r recode to nonfinite}
+d$Modal[d$Modal == ""] = "nonfinite"
+```
+
+
 # Let's graph overall
 ```{r agregate for graphing}
 agr = d %>%
-  # look only at embedded questions
-  # filter(VerbLemma != "") %>% 
+  filter(ModalPresent == "yes") %>%
   group_by(Modal,paraphrase) %>%
   summarize(mean_rating = mean(normed_rating), CILow = ci.low(normed_rating), CIHigh = ci.high(normed_rating)) %>%
   mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
@@ -88,7 +125,7 @@ ggplot(agr,aes(x=paraphrase, y=mean_rating, fill=paraphrase)) +
     scale_fill_manual(values=cbPalette) +
     scale_color_manual(values=cbPalette)
     # scale_alpha_discrete(range = c(.5,1))
-# ggsave("../graphs/overall_negation.pdf",width=6,height=3)
+ggsave("../graphs/overall_modals.pdf",width=6,height=4)
 
 ```
 

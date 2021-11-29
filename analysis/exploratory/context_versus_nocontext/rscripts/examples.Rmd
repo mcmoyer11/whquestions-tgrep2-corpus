@@ -1,0 +1,151 @@
+---
+title: "Exploratory analysis of context: Examples"
+author: Morgan Moyer
+date: October 19, 2021
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
+library(ggplot2)
+library(lme4)
+library(lmerTest)
+library(multcomp) # not available for this version of R
+library(philentropy)
+library(stringr)
+library(textstem)
+library(tidyverse)
+theme_set(theme_bw())
+cbPalette <- c("#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73")
+this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(this.dir)
+source("../../../helpers.R")
+```
+
+```{r read in all the data, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
+context_root = read.csv("../../../03_experiment/data/normed.csv") 
+context_root$Task <- "context"
+context_root$VerbLemma <- ""
+context_root = context_root[,!(names(context_root) %in% c("X"))]
+
+context_emb = read.csv("../../../04_experiment/data/normed.csv") 
+context_emb$Task <- "context"
+context_emb = context_emb[,!(names(context_emb) %in% c("X"))]
+
+
+nocontext_root = read.csv("../../../05_experiment/data/normed_nocontext_root.csv")
+nocontext_root$VerbLemma <- ""
+nocontext_root$Task <- "nocontext"
+nocontext_root = nocontext_root[,!(names(nocontext_root) %in% c("X"))]
+
+nocontext_emb = read.csv("../../../06_experiment/data/normed_nocontext_embedded.csv")
+nocontext_emb$Task <- "nocontext"
+nocontext_emb = nocontext_emb[,!(names(nocontext_emb) %in% c("X"))]
+```
+
+```{r join all the dfs together, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
+context <- full_join(context_root,context_emb)
+nocontext <- full_join(nocontext_root,nocontext_emb)
+d <- full_join(context, nocontext)
+
+# sanity check the join
+nrow(context_root) + nrow(context_emb) + nrow(nocontext_root) + nrow(nocontext_emb)
+nrow(d)
+```
+
+```{r bring in corpus to see the context, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
+corp = read.csv("../../../../corpus/analysis/swbd_contexts.csv")
+names(corp)[names(corp) == "TGrepID"] <- "tgrep_id"
+```
+
+Interesting MA with domain restriction
+
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == "2512:34") %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == "2512:34") %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == "2512:34") %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+
+World knowledge
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == "101503:16") %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == "101503:16") %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == "101503:16") %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+MS
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == "38489:4") %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == "38489:4") %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == "38489:4") %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
+
+
+hmmm
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+corp %>%
+  filter(tgrep_id == "11532:7") %>% 
+  select(PreceedingContext) %>% 
+  slice(1)
+```
+
+```{r , warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == "11532:7") %>% 
+  select(Sentence) %>% 
+  slice(1)
+```
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+d %>%
+  filter(tgrep_id == "39551:19") %>%
+  group_by(Task,paraphrase) %>%
+  summarize(mean_rating = mean(normed_rating))
+```
