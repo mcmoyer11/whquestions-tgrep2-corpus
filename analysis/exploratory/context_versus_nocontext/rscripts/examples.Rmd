@@ -145,7 +145,7 @@ d %>%
 
 ```{r, warning=FALSE, echo=FALSE, message=FALSE}
 d %>%
-  filter(tgrep_id == "39551:19") %>%
+  filter(tgrep_id == "75191:67") %>%
   group_by(Task,paraphrase) %>%
   summarize(mean_rating = mean(normed_rating))
 ```
