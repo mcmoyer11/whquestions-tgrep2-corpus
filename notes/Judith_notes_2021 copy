@@ -1,0 +1,1120 @@
+1. clean up and run experiment for embedded questions
+2. projection: 
+**start with these two: (focus on the discussion at the end and the questions raised for moving forward)
+	- JD & JT 2018 JOS paper with bever
+	- paper in slack
+
+	- khuyen's work on 
+	- CR, 
+	- cian qing, lassiter, goodman 2015?? aspectual presupposition with 'stop' in RSA
+	(think about how to model projection variability)
+	- commitment bank dataset (marneffe)
+
+
+3. annotated biblio for but stuff
+	- zhong and collins paper on QUT and but
+	- 
+
+4. gelman and hill regression modeling book --- work thorugh some of the chapters (interpreting model coefficients and coding predictors) 
+
+
+
+
+Thoughts about projection:
+1. causal connection between at-issueness and projectivity (discussion from 2018 paper)....thinking of attention?
+
+2. projectivity/at-issuness correllates negatively with surprisal?
+does the projectivity of a lexical content negatively correllate with the surprisal of the lexical content?
+
+- a priori likelihood --> how to quantify? 
+--> just frequency of text in a database?
+--> can it be measured using BERT?
+
+- maybe the order of projectivity depends on the baseline average surprisal of lexical content?
+- but what about pronouns? 
+
+how do particiapnts enrich the context??
+
+
+3. how much information is shared between context and sentence with supposedly projective content?
+---> from the de Marneffe paper, hard to guage because the contexts are pretty impoverished
+
+4. 
+
+
+
+Thoughts about BUT:
+- explicit QUDs --> how often is there an explicit QUD before a 'but'?
+
+Notes from but meeting (2-22):
+- for blog post, keep it simple
+- for summer project, can have more empirical scope
+
+- anything that supports that the second conjunct carries more force?
+
+- take a stab at writing up a paragraph on the theoretical background, in a way that lay people can understand!!!
+
+*** within the next week
+
+---------------------------------------------------------------
+---------------------------------------------------------------
+MEETING, 3/10
+---------------------------------------------------------------
+---------------------------------------------------------------
+
+
+---------------------------------------------------------------
+Projection
+---------------------------------------------------------------
+
+pilot with 4 people
+
+use one of the analysis scripts from khuyen from the repo
+plot at-issueness X projection
+
+go ahead and post the pilot today
+
+
+---------------------------------------------------------------
+debrief of CUNY Talk, and follow-up analysis
+---------------------------------------------------------------
+
+is there a systematic way to look at participant variability?
+some 
+
+****KL DIVERGENCE ANALYSIS
+
+quantify the amout of agreement/disagreement item by item
+looking at the sum of KL divergences from each individual to the mean
+each item mean values as the target 
+and compute KL divergence from participant to mean
+
+sum up all the KL
+and it becomes the item's disagreement value?
+
+OR take the average of the KL and put error bars?
+
+by-item mean disagreeemnt rating but also error bars to speak to variability in the disagreement
+
+explore further the definite and indefinite description questions
+
+Whether there's cross-participant certainty
+
+
+
+
+---------------------------------------------------------------
+---------------------------------------------------------------
+MEETING, 4/1
+---------------------------------------------------------------
+---------------------------------------------------------------
+projection:
+it's possible that a speaker can raise or address multiple QUDs, but that has to be dispreferred because it's a dick move, and creats a confusing conversation
+
+
+
+(1) dig in the lit about the one QUD assumption....
+(2) practical: get better estiamte of surprisal using BERT
+huggingface 
+mask the predicate 
+either start-sent MAS (pred) and then predict
+OR
+start sent MASK end sent, predict 
+
+
+surprisal --> at issueness
+
+**** surprisal should predic valance and arousal
+
+ideally for surprisal take the bert or gpt2
+give the start of the sentence with the pred, and have it try to predict 
+
+compare to the gooogle ngram corpus
+
+
+head-final
+smaller effect of 
+surisap of the CC (surprisal of the prior on the CC) should be a better prediction of projection
+
+
+(3) include predicate class annotation in analysis
+- includein them in the anaysis
+
+
+
+
+EQ
+take a closer look at why 
+
+- pull out 
+- generate a plot 
+
+
+
+---------------------------------------------------------------
+---------------------------------------------------------------
+MEETING, 4/12
+---------------------------------------------------------------
+---------------------------------------------------------------
+SINGLE QUD HYPOTHESIS
+seems implicitly assumed, not explicit
+
+Roberts p. 6:52
+Russell p 
+- essential for definintion of carnap relevance?
+- relevance ordering for all propositions wrt one answer to the QUD
+
+roots in information-sturcture theories
+
+----
+for mega veridicality
+
+---------------------------------------------------------------
+---------------------------------------------------------------
+Questions, 4/12
+---------------------------------------------------------------
+---------------------------------------------------------------
+include matrix verb as random effect
+
+
+striking that modal effect goes away un embedded
+(exploratory analysis)
+combine the two data sets
+useful: put together the two datasets, run the model with QuestionType as fixed effect (centered)
+
+- do the individual wh-models for comprability with the Cogsci paper
+
+
+
+extract a couple for natually occurring questions
+like 2512:34 where its only possible to be exhaustive when it's possible to be exhaustive
+
+is there a way to figure out what the domain is from the context?
+
+
+worth going through by hand and making sure that each case is legitimate before final analysis
+
+get some more insight into the high other-ratings were removed
+
+IE, why are the weird cases weird?
+- QUALITATIVE INSIGHT INTO WHICH CASE ARE EXCLUDED
+- INSIGHT INTO CASES WITH KNOW (cases that do and dont follow that lit pattern)
+- anything about the lexical semantics of the ver that would predict????
+
+- for how many predicates is the case that they have true embedded cases or not-----> is there sub-Aux inversion in the embedded question
+- group by wehther there's SAQ
+
+- subset by root vs. embedded
+---> is the similarity between the two datasets driven by these fake embedded questions
+
+-------------------------------------------------------
+-------------------------------------------------------
+Projection 4/13
+-------------------------------------------------------
+-------------------------------------------------------
+including 
+
+to what extent is it the class itself (emotive) as opposed to arousal/valence
+
+1. plots for each verb class, does mean valence/arousal with a dispersion metric (error bars)
+2. better surprisal estimates
+3. what are the legitimate interactions? 
+- surprisal and at-issueness
+- valenca and arousal are positively related to surprisal
+---> plot for each predicate, arousal (x) surprisal on y
+ is surprisal predictedd by arousal and valence?
+
+ by hypothesis, surprisal is what effects at-issueness
+
+4. are the arousal and valence effects gone because of broad classes? or is it because surprisal? or because at-issueness?
+----> (removing broad class and agentivity), we find that some of the variance is explained by arousal and valence
+
+
+should look at, for the different broad_class, how big are the differences wrt valence and arousal
+
+???can we create a context where we can make a think or believe sentence so surprising that the complement ends up projecting???
+(seems unlikely)
+
+5. annotate commitment bank for the classes of verbs represented
+
+
+6. if we take the limited resource budget view, then differences between timed/untimed expts
+
+7. one QUD: look in the literature on attnetion, because the QUD tells us what are the ways in 
+QUD draws attention to distinctions that we're making in the world
+attention and information structure 
+attention and memory
+
+- memory in information theoretic terms (probably mostly in visual memory)
+- check out vision guy at Harvard (slack judith)
+- halberda and lidz 
+- information structure???
+
+*** helpful to collect references where some claim has been made about # of main points on a overleaf.
+
+
+-------------------------------------------------------
+-------------------------------------------------------
+Questions for Tuesday 4/20
+-------------------------------------------------------
+-------------------------------------------------------
+Removing embedded SAI AND cases where the Q is comp to a P, comp to a verb (matrix verbs with particles) improves the cases
+
+embedded SAI = 7% (59 items)
+particles = 5% (40 items)
+
+HOWEVER, looking at graphs....
+
+
+
+
+However, eyeballing the SAI from the two groups, it doesn't seem there is much a difference 
+
+- Weirdness of embedded verbs???
+	- removing the SQ cases
+	- but then cases where there's a PP are also weird
+- KNOW-WH
+	- seems that most MS cases involve matrix negation and first person
+	- 
+	- 
+
+
+MEETING:
+potnetially 
+semi-randomly take 100 cases and hand annotate for whether they're good
+(roughly equal proportion of each type of cases, wh, modal, )
+
+THEN resample a larger dataset by duplicating the small one
+--> do the patterns still emerge? if we exclude the problematic cases?
+1) if you don't exclude the cases, do you replicate the original results?
+2) remove the problematic cases from the 100, regenerate the original dataset from those that are left....does that change anything in systematic ways?
+
+if it changes, thenthings are qualitatifely different and you should probably hand annotate
+
+
+
+
+FOR LAB MEETING:
+
+THREE WAY COMPARISON
+root questions, embedded Subject aux, "true" embedded
+FACET by root/SAI
+
+LOOKING AT VARIOUS EXAMPLES
+
+indefinite in there....
+99065:57
+
+look at negative predicates like doubt ---- more likely to result in MS???
+
+exh should no occur in DE environemnts?
+
+for the X operator
+the set of alternatives doesn't contain the stronger alternative
+
+alex or jane didn't come to the party
+X [alex and jane didn't come to the party]
+
+it's not the case that alex or jane....
+
+
+
+with negation aand a modal----
+
+
+LOOK MORE AT THE NEGATION
+
+a whithout negation
+105074:43
+87943:11
+
+got an 'what all'
+18835:114
+
+
+WHAT ABOUT EFFECTS OF VERB CLASS????
+
+TENSE?
+personhood of the subject
+
+check out joan bresnan linear regression on dative alternation
+
+one approach is to just build a gian regression model with all those linguistic factors as predictors as additive effects (no interactions)
+
+any theory that attempts to reduce WH-question interpretation to a single factor is doomed 
+
+if dhara trains the model on the dataset, which of the effects we are finding now are effects that the model learns about
+
+can the neural model bootstrap new features?
+
+
+just show overall the data patterns with the plots, eamples and issues about what the effects are
+build in a little about the prior ltierature
+QUESTIONS AND DE ENVIRONMENTS
+
+
+-------------------------------------------------------
+-------------------------------------------------------
+NOTES FROM LAB MEETING, 4/21
+-------------------------------------------------------
+-------------------------------------------------------
+
+what do you think the asker is asking?
+how much information do you 
+
+-------------------------------------------------------
+-------------------------------------------------------
+
+-------------------------------------------------------
+-------------------------------------------------------
+in discussion:
+there's another view where
+when people are giving the 'a' phs a high answer, it's not because they're 
+it's because domain restriction, and we can't decide against that from the current study
+
+- one option: leave it to future research
+***another option! take a random sample of the high-'a' paraphrase, hand annotate the contexts (acknowledging the potential biases being the researcher)
+---> whether the domain is >1, undertain, 
+--> use this to inform the question of domain restirction
+
+
+potentially use undergrad RAs, but that might be difficult
+
+
+
+Take ownership of the problem in a new way
+here are the assumptions that the research proceeds from
+interesting lingistc context dependence, discourse goal level context dependence
+strongly supports a pragmatic view
+then get back to the theories...
+- there are theories that can support (e.g. modal), but here are the data points that are harder to explain
+- go through what you think the most natural response would be, and say why it is or is not a good response
+
+from the dissertation i can already argue that there are contextual variables that go beyond...informativity and discourse goals
+
+cresswell's objection to all the pronouns
+you can build all the things into the semantic theory, but it's no longer clear that that's an interesting semantic theory
+
+
+listeners have uncertainty about the interpretation of wh-questions
+
+from the perspective of the hearer?
+
+strong claim: the representation is weak
+what is the most contentful abstract representation of a wh-questions, given every thing i've gathered from the experiments
+
+raise in the intro, the tension between the approach where one asks "what is the meaning of wh-questions", and "how do people interpret wh-question?"
+
+the approach has often been the first, but the data is limited, and passed down
+and we don't have a good idea what the natural interpretations are
+and what should be seantically encoded
+
+we're gonna use data about the second question to inform the first question
+
+we will come to the conclusion that it has little to do with it.
+
+try to write a basic introduction to the paper
+
+HOMEWORK:
+
+XXX1. set up the studies without context
+
+2. thing through the way in which stripping down the context would influence the interpretation
+---> looking at definite/indefinite/generic
+
+3. try writing up the intro with the framing logic
+
+4. hand-annotate a random sample of the high 'a' rating cases for the domain size
+
+
+5. Frame cog sci seminar talk in this way: 
+then the problem becomes how do people resolve uderspecification?
+
+what have people claimed about the meaning of questions
+
+really there haven't been no analyses of naturalistic questions in this domain.
+
+include one finding --- that you find the effect of modal
+
+keep it general, because there may not be many linguists
+
+
+-------------------------------------------------------
+-------------------------------------------------------
+PROJECTION
+-------------------------------------------------------
+-------------------------------------------------------
+
+plot google n_gram surprisal by bert_2
+
+bert: do it both ways....
+just the martix context, not the complement
+
+next word prediction
+then compare with GPT2
+
+
+
+what does the complement add to the surprisal
+maybe expect that predicates that take different syntactic structures, that observing the complement that this might affect the BERT rating?
+
+BY TODAY
+
+XXX1. Bert estimate without complement
+XXX2. plot bert+CC x google n-gram
+XXX3. plot bert-CC x google n-gram 
+XXX4. plot mean projection x bert+CC
+XXX5. plot mean projection x bert-CC
+XXX6. surprisal by mean_atissueness 
+XXX7. mean_projection rating as a function of verb class
+- histogram of valence by verb class
+- histogram of arousal by  verb class
+---> uncenter these values!!!
+(only center for predictors in models )
+
+
+
+XXXto what extent does surprisal predict at-issueness?
+(graph?)
+
+effects of valence and arousal are subsumed by surprisal and at-issueness!
+
+XXXclean the scripts:
+one script for plots
+one script for analyses
+separate for exploratory investigations (like we did today)
+
+
+
+make new slides with the plots
+
+XXX**8. surprisal on y-axis, valence/arousal on x
+XXX***projection on y, surprisal on x 
+XXX***mean projection rating by verbclass
+
+thinking ahead, what do we want to model?
+- a model of projection of the CC
+- relate it to things that are easity encodable...we
+- reasoing about QUD (at issueness ratings)
+---> means that whether its the pred or the CC that's at issue
+---> take mean at issue rating, and 1- that is the rating compared to the alternatives (can be built into model)
+(under the finite budget assumption)
+- what is the role that surprisal plays in addition?
+
+-------------------------------------------------------
+Notes from lab meeting on projection
+-------------------------------------------------------
+ZAS workshop on scales??
+
+at issue non-maximal QUD
+
+i notice you chewing on your pencil.
+"did you recently stop smoking?"
+---> the speaker isn't presupposing the pre-state 
+
+set of utterances chosen to cover each set of possible world
+
+
+can speakers in general answer/respond based on subparts of language???
+thinking of apposotives:
+thinking of factives: what are the two dimensions of meaning?
+scully knows that the groom is a freak:
+(scully knows something, the groom is a freak)
+
+
+differences between the QUD from factives versus from aspectual verbs?
+- scully doesn't know that the groom is an asshole
+
+what would be the non-maximal QUD that allows the CC to project?
+- it would have to be the one about the matrix...
+- What does Scully know/believe?
+- vs. Is the groom a freak?
+
+OR
+Scully believes something, that thing is true
+Scully knows something, that thing is true
+
+sarcasm model? ruben cohen gorden
+
+-----
+is alex upset that p?
+is alex certain that p?
+...
+is p true?
+
+combination of veridicality of the positive answer
+and then the 
+
+
+causal direction from at issueness to projection
+
+
+-------------------------------------------------------
+-------------------------------------------------------
+Questions
+-------------------------------------------------------
+-------------------------------------------------------
+
+No contexts:
+
+participants will impute 
+
+
+study: 
+- give them a question
+- what kind of discussion do you think this question is happening in?
+- all the things
+
+
+
+"well, what would you have at a dinner party?"
+32994:9
+
+the context there is totally uninformative
+but what might people think the context is?
+----> this is probably a conversation-initial question rather than a concrete example from the middle of a conversation
+
+
+
+REMOVE correction from the training
+
+adjust the instruction and share link wtih judith
+
+
+- subtract new score from old score (+context versus - context)
+- is there any relationship between that score and how well the model does?
+- is it the case that the less that the item does with context that that's where the model does best cause its only looking at the target sentence
+
+say you take the ms scale, does introducing context make the ratings greater?
+- if yes, then out of the blue there might be a MA context
+
+exploratory mission
+do the cues det stronger or weaker?
+
+one hypotheses is:
+if you strip away context, then there's less 411 about the discourse goals so the linguistic cues should have a stronger effect on the rating
+
+anohter hypothesis:
+the effect depends (mysteriously) on the previous context and then the effect disappears
+
+another:
+discourse dependence is important, so when you remove the context then there is more uncertainty, so the distribution gets flatter
+
+for w/ and w/o context experiemnts:
+compute the differenec in KL divergence compared to the flat distribution (the target), and the expt is the comparison/reference
+- is the average difference bigger from one than the other 
+
+
+two types of analysis
+1. assessing are hte effect of the cues themselves bigger or smaller as a function of context
+2. overall how do the distribution of ratings change as a function of context
+
+
+X write up the prereg with the same predictions as the with context
+X add as exploratory analyses that we will be comparing the distributions 
+
+DOMAIN RESTRICTION
+
+if we just compare what the question
+
+what does the context provide in addition 
+
+do it for MA and MS contexts
+
+
+
+****background ***
+language as action versus language as product
+
+herb clark 1994 vs. 1996???
+arenas of language use
+
+take the language as action perspective to provide us a new perspective on whq
+
+and maybe help up solve some of the 
+
+
+language as product perspective isn't useful in the first place
+
+
+
+-------------------------------------------------------
+-------------------------------------------------------
+20 ppl / list
+send email to judith
+charge all of it to HAI grant
+
+at-issue to the lab account
+
+
+domain size just need to distinguish between a/the and ever
+
+sample one standard deviation above the mean
+
+111477:16 ---> what is the highest rating
+
+
+132813:10
+you get that the domain is greater than one
+'else' should trigger ---> look at nadine theiler's work
+
+recode the size category
+remove granularity
+
+
+post no context.
+
+
+
+Three separate coding---> include three more codings for context+question
+
+-------------------------------------------------------
+-------------------------------------------------------
+meeting 5/21, questions, no context study
+-------------------------------------------------------
+-------------------------------------------------------
+
+are the effects systematically smaller between context and no-context model results?
+
+
+- can we show that the no-context result is drive by particular items?
+- compared to the context experiment
+--> if you plot each of the items, the difference between context and no context (by-item on x axis) ordered by the size of the difference between the two 
+
+
+- one argument for the boring effect (just participant differences)
+----> for each item you see the same size difference
+
+
+KL
+- which, context, no context, is closer to uniform
+
+
+plotting in denisity
+simple regression
+predincting KL from task
+
+
+run separate models for the paraphrases
+
+effect of the wh word varies
+b
+no significant effect of task fro 'when' because reference, but for all other wh there is a difference such that there were higher 'a' ratings in no context
+
+***a ratings higher
+but modality doesnt change
+
+re-run the model for the different paraprhaases
+
+-------------------------------------------------------
+-------------------------------------------------------
+
+- put interpretation on the model results
+
+NOTES from Judith:
+*** centering must happen last before adding as a predictor in the model
+
+- 300 bars missing because you're filling by tgrep_id, so don't fill by tgrep_id
+
+- in addition to absolute difference plot the difference with directionality
+- also immediately following put examples going in each direction
+- Do also for the every cases
+
+--> seems like there's something specific to the mention-some cases
+but it doesn't impace the modality 
+but does for the wh effect
+
+
+Wh vs effect of the modal
+context provides domain relevant information, less so with the modal
+*** INTERESTING TO SEE THE EXTREME EXAMPLES
+
+
+feedback from talk:
+prpare with necessity vs possibiltity
+kehler: so far just looking at the empirical side of things, and testing the effects of these various factors
+we havent formalizes this as a cognitive model...ut tis abslutely something 
+
+if we take the questionas an ambiguous utterance, competing with alternative questions and inference about the goal...future
+
+think abut a very simple model with the alternatives: null?, or seomthing that diambiguates, what are the predictions under posisble QUDS
+question competes with scilence, two possible QUDS a/all
+if you activate the all QUD..how do ehte liunguistic 
+linguistic form directly map to QUD, and alterantives remain the same
+or hae the QUD be 
+
+THINK ABOUT A BASIC VERSION THAT IGNORES ALL THE FORM FACTOR FOR TH TIME BEING AND ENCODES QUESTION VERSUS NOTHING
+state space with just MS and MA answer
+and QUD that either raises either the question about everything or at least one thing
+
+take from the webbook from greg and MH, copy the code from the question model? or maybe the very first model, or the first QUD model
+
+download webppl (maybe check with brendon?)
+
+
+get a draft of the paper ready...if judith leaves then s&P or JOS
+by the end of the summer
+
+put together a google doc with a general outline which ahs a good way to set up the paper
+
+what are the theoretical conclusions that we'd want to draw?
+--> questions are maximally underspecified
+
+
+
+don't include the relative clauses or the adjuncts in the presentation
+(that will make it seem like you're not randomly excluding cases)
+don't report the 11,000 things
+XXX that are root questions, 
+FOCUS on questions
+
+take the 2015 paper as a model of what this paper is like
+lead with the main results of no overa MA bias
+then go into the LF factors, 
+
+ex1a: root, contxt
+ex1b: EQ, context
+
+ex2a/2b
+
+meta results: 
+---> everything, interesting discussion about the modal and wh interaction with task
+why --> we see the null result in one case and not in the other
+
+provides good suppor for the pragmatic account
+for MS what the domain is what we're talking about
+overleaf
+
+
+***results with interpretation
+XXX***results with examples
+XXX***make a general outline for next week, one sentence summary for each part
+***fill out end of year survey 
+
+
+_____________
+
+
+more product oriented views, in virtue of putting explanatory force into the semantics, is going to make constrained predictions about the overall biases 
+
+
+any time with interpretation, there might be uncertainty
+when we say bias, we mean listeners ascribe a higher probabality to one or the other but they might not be comitted one way or the other, or might have uncertainty even after observing the question
+
+
+contrastiv inference with imperatives
+
+click on the big....(eye movements to the contrasting big thing)
+
+look at elisa kreiss \& degen referene list of last year's cog sci paper
+
+
+
+BETTER STATS POSSIBILITIES:
+(1) analyze just the 'a' ratings 
+--> how can the predicts be translate to analyses in reasonable ways?
+
+-if you think think about the prediction that MS is a function of ling form
+--> then you can do a linear regression predicting 'a' ratings only and this simplifies the analyses
+
+
+(if you want to say that nonmodal questions are MA biased, then run just 'every' model)
+
+(2) for the bias of MA over MS, this is trickier
+--> run the analysis on the every and a ratings, and 
+- directly predict the a and every ratings...don't renormalize
+- subset don't renormalize
+
+TO DO (by week of June 20):
+
+(1) XXXstart reporting experiments 1a and 1b
+(2) XXXredo analyses with paraphrase break up
+(3) XXX send judith the questionaire on friday
+(4) write up big big meta results
+
+
+
+______________________________________________________________________
+______________________________________________________________________
+
+thinking about SuB reviews....
+- building up how there is a MA bias
+being more and more specific about the ltierature
+
+
+we show that (a) if you assume that the basic meaning of wh is MA and that that fact makes the p[rediction that MA is more frequent
+
+unlesss you make some auxiliary assumption about how the contextual factors override the basic meaning....so then why would we want to make the assumption that the basic meaning is indeed MA?
+
+
+why is the basic word order not a plausible assumption
+
+what is that not plausible for the MS 
+
+***what are the arguments that people have made for one thing
+
+under reasonable assumptions about what kind of t
+which is the type shifter that's deployed in different contexts.
+
+
+in principle a multiple comparisons problem
+- ideally to adresss all the questions in one big analysis
+- it just makes more sense to run all the sub models
+
+disuccsion in data anlysis section before that we're doing this
+
+
+run the over all 
+****RUN THE SEPARATION OF WH WORDS
+include interaction terms modal and paraphrase
+is there a main effect 
+
+
+
+include more denisty plots for both root and then embedded
+
+interesting to run a meta analysis of the kinds of data points 
+
+*** reporting that know-wh are MA biased which explains the literature
+
+(side point)
+***show that the 'the' ratings are lower in the eq case
+
+subset to just 'the' and use the data from both experiments....is experiment a predictor of 'the'-ratings.
+- in the EQ case there's less of a presupposition....and speculate why that might be.
+
+
+lead with the big points and then take the small points
+
+
+
+
+****somewhere additional data is being intriduced....
+chekc that out 
+link to files in slack
+
+
+----------------------------------------
+language modeling project
+----------------------------------------
+- try to filter out the sentences where the rating didn't really change???
+
+- quantify how many items had changes between context and no context
+
+
+hui ching chen potsdam
+
+
+----------------------------------------
+paper write-up 15/09
+----------------------------------------
+
+
+what do the semantic theories predict if they can accomodate any pattern of behavior wrt vague goals ?
+
+its not like we're showing that any semantic theories is inherently wrong, but that any theory that wants to capture how people interpret real questions in real contexts...then they have to take into account all these factors
+
+
+taking the semantic theories as minimal models of the phenomenon that if the semantics was all there was....the behavioral predictions would be....
+
+we can already show that alot of the more extreme claims made about the semantics need to have a strong defeasible pragmatic system on top that can reverse what the semantics is saying
+
+or given all the things we have observed, if we dont want the semantics to be defeasible then it needs to be minimal
+
+
+1. write up experiments 2a and 2b by the end of next week
+(if there are questions of framing, these are things we can discuss)
+2. introduction by the week after
+3. comparison the week after.
+(what is the role that context plays, the qualitative ways that context shapes those results)
+
+
+check in september 29
+judith leaves october 2
+back on campus november/december
+
+
+----------------------------------------
+----------------------------------------
+
+look statistically at negation......
+plot for me and judith...in different facets with negation versus without how big is the MS bias
+
+(does the bias hold irrespective of negation?)
+
+----------------------------------------
+----------------------------------------
+meeting 11/8
+
+in order to arrive at the interpretation
+if we believe that this is going to be a mix of semantics and pragmatics
+
+to the extent that we 
+
+we have to ask what are the theories and what are the assumptions that we have to make about the predicted behavior
+
+what are the behavioral predictions
+
+*in the absence of the modal on average* CETERIS PARABUS  ASSUMING THAT'S THE ONLY THING THAT MATTERS
+
+sure, no one's rejecting pragmatic mention-some
+
+these people must be committed to the AVERAGE prediction that 
+
+probabilistic predictions about the average behavior
+
+--------------------
+cost
+--------------------
+
+
+MA is more informative only relative to the decision problem makes the most fine grained determination of state space
+
+in the 
+listener simulating themself as a 
+
+MS: the smaller the domain is, the less costly the MA (the less strong the bias for MS)
+
+
+----------------------------------------
+----------------------------------------
+17 february 2022
+----------------------------------------
+----------------------------------------
+
+What are the main points we want to make in the experimental section?
+what do we need to get there?
+
+Main results:
+1 vs 2: context
+A vs B: root versus embedded
+
++/-Modal
+Wh
+(Matrix Verb for Bs)
+
+prediction 1:
+--> no borne out
+
+Prediction 2:
+yes and no?
+**make table based on the models!
+1a: mostly 'yes', but not for 'where' or 'why' maybe
+1b: mostly 'yes', but not for 'who'
+---> affect of the modal is pretty consistent but there is some minor deviations possibly from small number of data points
+
+(also for know) --> run the wh-models for know??
+
+2a: mostly 'yes' except for 'where'
+similar to 1a except for 'who
+
+2b:
+'what', 'how', 'why'
+marginal for 'when'
+--> intermediate squiggly line
+for 'where'??
+--> numerically positive but not significant
+--> but positive increase with interaction evidence for modal
+
+not for 'who'
+
+
+overall:
+we can be fairly confident that the moal is real
+- least consistent for 'where' and 'who'
+- to a lesser 
+
+
+MODELS, look at the table judith made
+
+Patterns that don't bear out modal prediction:
+- no main effect, no interaction
+- negative main effect, negative interaction
+- no main effect, negative interaction
+- no main effect and negative interaction
+main efect but negative interaction
+
+tricky:
++ME and - interaction: depends on the size of the interaction, if the interaction is small then probably fin
+
+-ME and +interaction: if the interaction is really strong then it would provide evidence 
+
+
+***********************************
+
+what that means is you assume BY CONVENTION most of the time the 
+
+it doesn't make sense that to predict a semantic meaning that is a minority
+
+the linking assumption is that if you put something in your semantics it's because you expect that to be the basic meaning of that linguistic item. if we take that seriously, then once these items are embedded in an actually context, you expect that to be the meaning that occurs ON AVERAGE
+
+of course, once you embed things in context, there are all sorts of pragmatic factors that can complicated the picture. but if you put something in the semantics, you expect it to be the meaning.
+
+
+motivate the modal:
+write the section as 
+"motivated by a consistent observations of examples of XXX, XYZ propsed that modality is an important factor"
+***********************************
+
+Prediction 3: Wh-word -questions
+for who-questions, 
+
+pragmatic 
+
+Look, there have been observations (ginz, AL) that suggest wh-word conditions....in particular...who bersus non-who. no direct semantic accounts that predict, but it seems like there should be a pragmatic explanation along the lines of aloni....
+*explain the aloni pragmatic account
+
+
+RESULTS: maybe include a model that tried to quantify the base rate differences between wh-words???
+
+TABELED FOR THE TIME BECAUSE OF HOW WE SEPARATED OUT MODELS BY WH-WORD
+
+a vs every subset
+predict rating from wh-word (reference = when) * paraphrase
+
+
+***********************************
+set up the intro:
+there are semantic accounts of wh-qs, there are pragmatic accounts.
+
+here are the sets of predictions that are the same versus different
+
+Look, there may be certain factors that semantically condition (to some exgtent) the interpretation (---i.e. the modality is consistent). But there is also a ton of pragmatic/contextual stuff that contributes. 
+
+**this needs to be a little worked out more...
+
+*the linguistic versus contextual dichotomy is perhaps not useful 
+***********************************
+
+
+Prediction 4: know
+
+
+Prediction 
+
+
+Take
+____________________________________________
+____________________________________________
+19/2 Meeting 
+____________________________________________
+____________________________________________
+
+***integrate the predictions at the end of every section
+and then in table form 
+
+
+after semantic vs pragmatic accounts
+
+these two types of accounts are usually treated as separate, but there are useful insights that each present
+they way in which they differe is as how clark laid it out
+
+
+the way we are going to think about this from the action framework, but that requires testing the extent to which these factors are conventionalized, and from that we take inspiration of semantic acounts
+
+
+be careful about talking about contexts make sure we don't overpromise cause we dont really measure speaker goals, rather context is just everything else that coule present additional factors
+
+
+pick apart some of the cases that have the
+
