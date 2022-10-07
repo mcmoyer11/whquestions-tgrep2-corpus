@@ -95,6 +95,130 @@ summary(m.ms.ma.full)
 
 
 
+# Wh-word sub-models
+
+## What
+```{r}
+d_what = d.ms.ma %>% 
+  filter(Wh=="what") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>% 
+  mutate(cParaphrase = as.numeric(paraphrase.dc)-mean(as.numeric(paraphrase.dc))) %>% 
+  droplevels()
+
+# m.what = lmer(normed_rating ~ cModalPresent*cParaphrase + (1+cParaphrase+cModalPresent|workerid) + (1+cParaphrase|tgrep_id) + (1+cParaphrase|VerbLemma), data=d_what) 
+
+# saveRDS(m.what, "../models/what.rds")
+
+m.what <- readRDS("../models/what.rds")
+summary(m.what)
+
+
+# m.what.simple = lmer(normed_rating ~ paraphrase*cModalPresent-cModalPresent + (1+paraphrase+cModalPresent|workerid) + (1+paraphrase|tgrep_id), data=d_what)
+# summary(m.what.simple)
+```
+
+## How
+```{r}
+d_how = d.ms.ma %>% 
+  filter(Wh=="how") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>% 
+  mutate(cParaphrase = as.numeric(paraphrase.dc)-mean(as.numeric(paraphrase.dc))) %>% 
+  droplevels()
+
+m.how = lmer(normed_rating ~ cModalPresent*cParaphrase + (1+cParaphrase+cModalPresent|workerid) + (1+cParaphrase|tgrep_id) + (1+cParaphrase|VerbLemma), data=d_how) 
+
+# saveRDS(m.how, "../models/how.rds")
+
+m.how <- readRDS("../models/how.rds")
+summary(m.how)
+
+# m.how.simple = lmer(normed_rating ~ paraphrase*cModalPresent-cModalPresent + (1+paraphrase|tgrep_id), data=d_how) 
+# summary(m.how.simple)
+```
+
+## Where
+```{r where model}
+d_where = d.ms.ma %>% 
+  filter(Wh=="where") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>% 
+  mutate(cParaphrase = as.numeric(paraphrase.dc)-mean(as.numeric(paraphrase.dc))) %>% 
+  droplevels()
+
+m.where = lmer(normed_rating ~ cModalPresent*cParaphrase + (1+cParaphrase+cModalPresent|workerid) + (1+cParaphrase|tgrep_id) + (1+cParaphrase|VerbLemma), data=d_where) 
+
+saveRDS(m.how, "../models/how.rds")
+
+m.how <- readRDS("../models/how.rds")
+summary(m.how)
+summary(m.where)
+
+# m.where.simple = lmer(normed_rating ~ cParaphrase*cModalPresent-cModalPresent + (1+cParaphrase+cModalPresent|workerid) + (1+cParaphrase|tgrep_id), data=d_where) 
+# summary(m.where.simple)
+```
+
+## WHY
+```{r why model}
+d_why = d.ms.ma %>% 
+  filter(Wh=="why") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>% 
+  mutate(cParaphrase = as.numeric(paraphrase.dc)-mean(as.numeric(paraphrase.dc))) %>% 
+  droplevels()
+
+m.why = lmer(normed_rating ~ cModalPresent*cParaphrase + (1+cParaphrase+cModalPresent|workerid) + (1+cParaphrase|tgrep_id) + (1+cParaphrase|VerbLemma), data=d_why) 
+
+saveRDS(m.how, "../models/how.rds")
+
+m.how <- readRDS("../models/how.rds")
+summary(m.how)
+summary(m.why)
+
+# m.why.simple = lmer(normed_rating ~ cParaphrase*cModalPresent-cModalPresent + (1+cParaphrase+cModalPresent|workerid) + (1+cParaphrase|tgrep_id), data=d_why) 
+# summary(m.why.simple)
+```
+
+## Who
+```{r who model}
+d_who = d.ms.ma %>% 
+  filter(Wh=="who") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>% 
+  mutate(cParaphrase = as.numeric(paraphrase.dc)-mean(as.numeric(paraphrase.dc))) %>% 
+  droplevels()
+
+m.who = lmer(normed_rating ~ cModalPresent*cParaphrase + (1+cParaphrase|workerid) + (1+cParaphrase|tgrep_id) + (1+cParaphrase|VerbLemma), data=d_who) 
+
+saveRDS(m.how, "../models/how.rds")
+
+m.how <- readRDS("../models/how.rds")
+summary(m.how)
+summary(m.who)
+
+# m.who.simple = lmer(normed_rating ~ cParaphrase*cModalPresent-cModalPresent + (1+cParaphrase|workerid) + (1+cParaphrase|tgrep_id), data=d_who) 
+# summary(m.who.simple)
+```
+
+## When
+```{r when model}
+# have to use less random effects structure
+d_when = d.ms.ma %>% 
+  filter(Wh=="when") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>% 
+  mutate(cParaphrase = as.numeric(paraphrase.dc)-mean(as.numeric(paraphrase.dc))) %>% 
+  droplevels()
+
+m.when = lmer(normed_rating ~ cModalPresent*cParaphrase + (1+cParaphrase|tgrep_id) + (1+cParaphrase|VerbLemma), data=d_when) 
+
+saveRDS(m.how, "../models/how.rds")
+
+m.how <- readRDS("../models/how.rds")
+summary(m.how)
+summary(m.when)
+
+# simple effects
+# m.when.simple = lmer(normed_rating ~ cParaphrase*cModalPresent-cModalPresent + (1+cParaphrase|tgrep_id), data=d_when) 
+# summary(m.when.simple)
+```
+
+
 # Split models up by paraphrase
 ## A paraphrase
 
@@ -129,7 +253,124 @@ a.model <- readRDS("../models/model-contexts-a.rds")
 summary(a.model)
 ```
 
-## Every paraphrase
+
+## What
+```{r}
+d_what = a_data %>% 
+  filter(Wh=="what") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>% 
+  mutate(cTask = as.numeric(Task)-mean(as.numeric(Task))) %>% 
+  droplevels()
+
+# m.a.what = lmer(normed_rating ~ cModalPresent*cTask + (1+cModalPresent|workerid) + (1+cTask|tgrep_id) + (1+cTask|VerbLemma), data=d_what)
+# saveRDS(m.a.what, "../models/a-what.rds")
+
+m.a.what <- readRDS("../models/a-what.rds")
+summary(m.a.what)
+
+
+# m.what.simple = lmer(normed_rating ~ paraphrase*cModalPresent-cModalPresent + (1+paraphrase+cModalPresent|workerid) + (1+paraphrase|tgrep_id), data=d_what)
+# summary(m.what.simple)
+```
+
+## How
+```{r}
+d_how = a_data %>% 
+  filter(Wh=="how") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>% 
+  mutate(cTask = as.numeric(Task)-mean(as.numeric(Task))) %>% 
+  droplevels()
+
+# m.a.how = lmer(normed_rating ~ cModalPresent*cTask + (1+cModalPresent|workerid) + (1+cTask|tgrep_id) + (1+cTask|VerbLemma), data=d_how)
+# saveRDS(m.a.how, "../models/a-how.rds")
+
+m.a.how <- readRDS("../models/a-how.rds")
+summary(m.a.how)
+
+# m.how.simple = lmer(normed_rating ~ paraphrase*cModalPresent-cModalPresent + (1+paraphrase|tgrep_id), data=d_how) 
+# summary(m.how.simple)
+```
+
+## Where
+```{r where model}
+d_where = a_data %>% 
+  filter(Wh=="where") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>% 
+  mutate(cTask = as.numeric(Task)-mean(as.numeric(Task))) %>% 
+  droplevels()
+
+# m.a.where = lmer(normed_rating ~ cModalPresent*cTask + (1+cModalPresent|workerid) + (1+cTask|tgrep_id) + (1+cTask|VerbLemma), data=d_where) 
+# saveRDS(m.a.where, "../models/a-where.rds")
+
+m.a.where <- readRDS("../models/a-where.rds")
+summary(m.a.where)
+
+# m.where.simple = lmer(normed_rating ~ cParaphrase*cModalPresent-cModalPresent + (1+cParaphrase+cModalPresent|workerid) + (1+cParaphrase|tgrep_id), data=d_where) 
+# summary(m.where.simple)
+```
+
+## WHY
+```{r why model}
+d_why = a_data %>% 
+  filter(Wh=="why") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>% 
+  mutate(cTask = as.numeric(Task)-mean(as.numeric(Task))) %>% 
+  droplevels()
+
+# table(d_why$workerid,d_why$ModalPresent)
+
+# m.a.why = lmer(normed_rating ~ cModalPresent*cTask + (1+cTask|tgrep_id) + (1+cTask|VerbLemma), data=d_why)
+# saveRDS(m.a.why, "../models/a-why.rds")
+
+m.a.why <- readRDS("../models/a-why.rds")
+summary(m.a.why)
+
+# m.why.simple = lmer(normed_rating ~ cParaphrase*cModalPresent-cModalPresent + (1+cParaphrase+cModalPresent|workerid) + (1+cParaphrase|tgrep_id), data=d_why) 
+# summary(m.why.simple)
+```
+
+## Who
+```{r who model}
+d_who = a_data %>% 
+  filter(Wh=="who") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>% 
+  mutate(cTask = as.numeric(Task)-mean(as.numeric(Task))) %>% 
+  droplevels()
+
+# m.a.who = lmer(normed_rating ~ cModalPresent*cTask + (1+cTask|tgrep_id) + (1+cTask|VerbLemma), data=d_who) 
+# saveRDS(m.a.who, "../models/a-who.rds")
+
+m.a.who <- readRDS("../models/a-who.rds")
+summary(m.a.who)
+
+```
+
+## When
+```{r when model}
+# have to use less random effects structure
+d_when = a_data %>% 
+  filter(Wh=="when") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>% 
+  mutate(cTask = as.numeric(Task)-mean(as.numeric(Task))) %>% 
+  droplevels()
+
+# m.a.when = lmer(normed_rating ~ cModalPresent*cTask + (1+cTask|tgrep_id) + (1+cTask|VerbLemma), data=d_when) 
+
+# saveRDS(m.a.when, "../models/a-when.rds")
+
+m.a.when <- readRDS("../models/a-when.rds")
+summary(m.a.when)
+
+# simple effects
+# m.when.simple = lmer(normed_rating ~ cParaphrase*cModalPresent-cModalPresent + (1+cParaphrase|tgrep_id), data=d_when) 
+# summary(m.when.simple)
+```
+
+
+
+
+
+# Every paraphrase
 
 ```{r subset to every-paraphrase, include=FALSE, warning=FALSE, echo=FALSE}
 # Subset
@@ -156,7 +397,119 @@ every.model <- readRDS("../models/model-contexts-every.rds")
 summary(every.model)
 ```
 
-## The paraphrase
+
+## What
+```{r}
+d_what = every_data %>% 
+  filter(Wh=="what") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>% 
+  mutate(cTask = as.numeric(Task)-mean(as.numeric(Task))) %>% 
+  droplevels()
+
+# m.every.what = lmer(normed_rating ~ cModalPresent*cTask + (1+cModalPresent|workerid) + (1+cTask|tgrep_id) + (1+cTask|VerbLemma), data=d_what)
+# saveRDS(m.every.what, "../models/every-what.rds")
+
+m.every.what <- readRDS("../models/every-what.rds")
+summary(m.every.what)
+
+
+# m.what.simple = lmer(normed_rating ~ paraphrase*cModalPresent-cModalPresent + (1+paraphrase+cModalPresent|workerid) + (1+paraphrase|tgrep_id), data=d_what)
+# summary(m.what.simple)
+```
+
+## How
+```{r}
+d_how = every_data %>% 
+  filter(Wh=="how") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>% 
+  mutate(cTask = as.numeric(Task)-mean(as.numeric(Task))) %>% 
+  droplevels()
+
+# m.every.how = lmer(normed_rating ~ cModalPresent*cTask + (1+cModalPresent|workerid) + (1+cTask|tgrep_id) + (1+cTask|VerbLemma), data=d_how)
+# saveRDS(m.every.how, "../models/every-how.rds")
+
+m.every.how <- readRDS("../models/every-how.rds")
+summary(m.every.how)
+
+# m.how.simple = lmer(normed_rating ~ paraphrase*cModalPresent-cModalPresent + (1+paraphrase|tgrep_id), data=d_how) 
+# summary(m.how.simple)
+```
+
+## Where
+```{r where model}
+d_where = every_data %>% 
+  filter(Wh=="where") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>% 
+  mutate(cTask = as.numeric(Task)-mean(as.numeric(Task))) %>% 
+  droplevels()
+
+# m.every.where = lmer(normed_rating ~ cModalPresent*cTask + (1+cModalPresent|workerid) + (1+cTask|tgrep_id) + (1+cTask|VerbLemma), data=d_where)
+# saveRDS(m.every.where, "../models/every-where.rds")
+
+m.every.where <- readRDS("../models/every-where.rds")
+summary(m.every.where)
+
+# m.where.simple = lmer(normed_rating ~ cParaphrase*cModalPresent-cModalPresent + (1+cParaphrase+cModalPresent|workerid) + (1+cParaphrase|tgrep_id), data=d_where) 
+# summary(m.where.simple)
+```
+
+## WHY
+```{r why model}
+d_why = every_data %>% 
+  filter(Wh=="why") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>% 
+  mutate(cTask = as.numeric(Task)-mean(as.numeric(Task))) %>% 
+  droplevels()
+
+# m.every.why = lmer(normed_rating ~ cModalPresent*cTask + (1+cTask|tgrep_id) + (1+cTask|VerbLemma), data=d_why)
+# saveRDS(m.every.why, "../models/every-why.rds")
+
+m.every.why <- readRDS("../models/every-why.rds")
+summary(m.every.why)
+
+# m.why.simple = lmer(normed_rating ~ cParaphrase*cModalPresent-cModalPresent + (1+cParaphrase+cModalPresent|workerid) + (1+cParaphrase|tgrep_id), data=d_why) 
+# summary(m.why.simple)
+```
+
+## Who
+```{r who model}
+d_who = every_data %>% 
+  filter(Wh=="who") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>% 
+  mutate(cTask = as.numeric(Task)-mean(as.numeric(Task))) %>% 
+  droplevels()
+
+# m.every.who = lmer(normed_rating ~ cModalPresent*cTask + (1+cTask|tgrep_id) + (1+cTask|VerbLemma), data=d_who)
+# saveRDS(m.every.who, "../models/every-who.rds")
+
+m.every.who <- readRDS("../models/every-who.rds")
+summary(m.every.who)
+
+```
+
+## When
+```{r when model}
+# have to use less random effects structure
+d_when = every_data %>% 
+  filter(Wh=="when") %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>% 
+  mutate(cTask = as.numeric(Task)-mean(as.numeric(Task))) %>% 
+  droplevels()
+
+# m.every.when = lmer(normed_rating ~ cModalPresent*cTask + (1+cTask|tgrep_id) + (1+cTask|VerbLemma), data=d_when)
+# saveRDS(m.every.when, "../models/every-when.rds")
+
+every.when <- readRDS("../models/every-when.rds")
+summary(m.every.when)
+
+# simple effects
+# m.when.simple = lmer(normed_rating ~ cParaphrase*cModalPresent-cModalPresent + (1+cParaphrase|tgrep_id), data=d_when) 
+# summary(m.when.simple)
+```
+
+
+
+# The paraphrase
 
 ```{r subset to the-paraphrase, include=FALSE, warning=FALSE, echo=FALSE}
 # Subset
