@@ -1610,17 +1610,20 @@ We can see these differences from a slightly different angle in \figref{density_
 \subsubsection{Regression analysis}
 Some semantic theories predict that MS only requries special licensing by the context. Thus, if information that plays a licensing role is removed, it is plausible that those theories would predict that MS readings would decrease in the second set of experiments. We already saw that this prediction was not borne out. 
 
-Analysis were conducted to assess the effect of Task (Context, NoContext) in addition to modality and \whw on question interpretation. Given the potential 4-way interaction by including Task as a predictor, we broke the data set up by Paraphrase and conducted three sub-model analysis.
+Analysis were conducted to assess the effect of Task (Context, NoContext) in addition to modality and \whw on question interpretation. Given the potential 4-way interaction by including Task as a predictor, we first broke the data set up by Paraphrase and then conducted sub-model analysis by \emph{wh}-phrase as previously done for the earlier experiments.
 
 
 \paragraph{The overall effect of Task on Paraphrase}
 
-Table \ref{sub-model_Task} presents regression results assessing the effect of Context (Task) on \emph{a}- and \emph{every}- paraphrase ratings.
+Table \ref{sub-model_Task} presents regression results assessing the effect of Context (Task) on \emph{a}- and \emph{every}- paraphrase ratings. We find first that there is a significant initial bias for \emph{a}- over \emph{every}-paraphrases, indicated by the positive oefficient for Paraphrase, and 
+
+
+First that there is a significant initial bias for \emph{a}-paraphrases
 {}
 % TASK COEFFICIENT TABLE
 \begin{table}
 \begin{center} 
-\caption{Coefficient table (predicted $\beta$ coefficient, standard error $SE$, $t$ value, and $p$ value) for overall Task x Paraphrase model in metanalaysis comparing Context and NoContext tasks. Both predictors are dummy-coded and centered (0 is no Context and \emph{every}-paraphrase, 1 for Modal is present and \emph{a}-paraphrase.} 
+\caption{Coefficient table (predicted $\beta$ coefficient, standard error $SE$, $t$ value, and $p$ value) for overall Task x Paraphrase model in metanalaysis comparing Context and NoContext tasks. Both predictors are dummy-coded and centered (0 is the Context Task and \emph{every}-paraphrase, 1 for Modal is present and \emph{a}-paraphrase.} 
 \label{sub-model_Task} 
 % \vskip .12in
 \begin{tabular}{lllll} 
@@ -1640,13 +1643,17 @@ Paraphrase:Task & .07 & .008 & 8.7 & $<$.0001\\
 
 \paragraph{\emph{A}-paraphrase Submodel}
 
+Table \ref{sub-models_Task-a} presents the regression results for the effect of Task and ModalPresent on \emph{a}-paraphrases, split up into submodels for each \emph{wh}-phrase to facilitate model interpretation.
+
 \paragraph{\emph{Every}-paraphrase Submodel}
+
+Table \ref{sub-models_Task-every} presents the regression results for the effect of Task and ModalPresent on \emph{every}-paraphrases, split up into submodels for each \emph{wh}-phrase to facilitate model interpretation.
 
 
 % TASK-A SUBMODEL COEFFICIENT TABLE
 \begin{table}
 \begin{center} 
-\caption{Coefficient table (predicted $\beta$ coefficient, standard error $SE$, $t$ value, and $p$ value) for Task x ModalPresent \emph{wh}-word submodels for the data subsetted to \emph{a}-paraphrases. Both predictors are dummy-coded and centered (0 is no Context, 1 for Modal is present.} 
+\caption{Coefficient table (predicted $\beta$ coefficient, standard error $SE$, $t$ value, and $p$ value) for Task x ModalPresent \emph{wh}-word submodels for the data subsetted to \emph{a}-paraphrases. Both predictors are dummy-coded and centered (0 is the Context Task, 1 for Modal is present.} 
 \label{sub-models_Task-a} 
 % \vskip .12in
 \begin{tabular}{l|lllll} 
@@ -1719,7 +1726,7 @@ WHEN & Intercept & .27 & .03 & 9.25 & $<$.0001\\
 % TASK-EVERY SUBMODEL COEFFICIENT TABLE
 \begin{table}
 \begin{center} 
-\caption{Coefficient table (predicted $\beta$ coefficient, standard error $SE$, $t$ value, and $p$ value) for Task x ModalPresent \emph{wh}-word submodels for the data subsetted to \emph{every}-paraphrases. Both predictors are dummy-coded and centered (0 is no Context, 1 for Modal is present.} 
+\caption{Coefficient table (predicted $\beta$ coefficient, standard error $SE$, $t$ value, and $p$ value) for Task x ModalPresent \emph{wh}-word submodels for the data subsetted to \emph{every}-paraphrases. Both predictors are dummy-coded and centered (0 is the Context Task, 1 for Modal is present.} 
 \label{sub-models_Task-every} 
 % \vskip .12in
 \begin{tabular}{l|lllll} 

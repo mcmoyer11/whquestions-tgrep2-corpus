@@ -81,6 +81,13 @@ d.ms.ma = d %>%
 contrasts(d.ms.ma$Wh) = cbind("how.vs.when"=c(0,1,0,0,0,0),"what.vs.when"=c(1,0,0,0,0,0),
                 "where.vs.when"=c(0,0,0,1,0,0),"who.vs.when"=c(0,0,0,0,1,0),
                 "why.vs.when"=c(0,0,0,0,0,1))
+
+d.ms.ma$paraphrase.dc <- as.factor(d.ms.ma$paraphrase.dc)
+contrasts(d.ms.ma$paraphrase.dc)
+contrasts(d.ms.ma$Task)
+
+View(d.ms.ma)
+contrasts(d.ms.ma$Wh)
 ```
 
 ```{r}

@@ -351,35 +351,6 @@ ggplot(agr, aes(x=paraphrase,y=mean_rating,fill=paraphrase)) +
         legend.direction = "horizontal") +
   scale_fill_manual(values=cbPalette) +
   scale_color_manual(values=cbPalette)
-# ggsave("../graphs/modals_context.pdf",,width=6,height=3)
+ggsave("../graphs/modals_context.pdf",,width=5,height=3)
 ```
 
-# MODALS BY EQ/RQ
-
-head(d)
-```{r}
-agr = d %>%   
-  filter(ModalPresent %in% c("yes")) %>%
-  group_by(Modal,QuestionType,paraphrase) %>%
-  summarize(mean_rating = mean(normed_rating), CILow = ci.low(normed_rating), CIHigh = ci.high(normed_rating)) %>%
-  mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh)
-
-
-head(agr)
-
-ggplot(agr, aes(x=paraphrase,y=mean_rating,alpha=QuestionType,fill=paraphrase)) +
-  geom_bar(position="dodge",stat="identity") +
-  geom_errorbar(aes(ymin=YMin,ymax=YMax), width=.25,position=position_dodge(0.9)) +
-  facet_wrap(~Modal,ncol=5) +
-  guides(fill=FALSE) +
-  guides(alpha=guide_legend(title="QuestionType")) +
-  theme(legend.key.size = unit(0.3, "cm"),
-        legend.position = "top", # c(.5,1)
-        legend.direction = "horizontal",
-        legend.margin=margin(0,0,0,0),
-        legend.box.margin=margin(0,0,-5,-5),legend.spacing.y = unit(0.001, 'cm')) +
-  scale_fill_manual(values=cbPalette) +
-  scale_color_manual(values=cbPalette) +
-  scale_alpha_discrete(range = c(.5,1))
-# ggsave("../graphs/modals_QT_context.pdf",,width=6,height=3)
-```
