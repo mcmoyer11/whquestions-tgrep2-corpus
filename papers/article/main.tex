@@ -49,10 +49,13 @@ Universit\'{e} Paris-Cit\'{e}, Stanford University}
 \begin{document}
 \maketitle
 
-\begin{center}
-    \textbf{Abstract}\\
-    Blah blah blah
-\end{center}
+% \begin{Center}
+\noindent \textbf{Abstract}\\
+\noindent Asking and answering questions is a staple of human communication. In order to answer a question effectively, a hearer must interpret the speaker's intention given the specific question asked. \emph{Wh}-questions like \emph{Where can I get coffee?} are underspecified for (non-)exhaustivity, i.e., how many answers must be provided to resolve the speaker's goal. Intuitions from the semantic literature report that questions are generally exhaustive, and non-exhaustive only in the context of specific linguistic factors (e.g., the modal \emph{can}, certain \emph{wh}-words). To test these assumptions, we collected question paraphrase ratings for naturally occuring root questions in variable linguistic contexts. In contrast to previous claims, we find that questions are not biased for exhaustivity. However, other prior observations are supported by the data. We argue that a full account of the observed distribution of meanings must integrate discourse factors like the hearer's estimate of the speaker's goal, alongside (or subsuming the effect of) linguistic cues.\\
+
+\noindent \textbf{Keywords:} 
+psycholinguistics; experimental pragmatics; corpus linguistics; \emph{wh}-questions; exhaustivity
+% \end{Center}
 
 \section{Introduction}
 
@@ -105,7 +108,7 @@ On the one hand, while questions without modals are on average less acceptable o
 % \jd{if we're still making the "here is the maximal semantic claim we can make on the basis of the data" point, this is where it should be foreshadowed.}
 
 
-In the next section, we will discuss both the main theoretical treatments of Mention-Some, and review the factors which have been observed to affect the distribution of this reading, the presence/absence of modals, the wh-word, and matrix embedding verbs for embedded questions. We will then summarize with the main predictions derived theoretically and from observation of the literature. 
+In the next section, we will discuss both the main theoretical treatments of Mention-Some, and review the factors which have been observed to affect the distribution of this reading: the presence/absence of existential modality, the wh-word, and matrix embedding verbs for embedded questions. We will then summarize with the main predictions derived theoretically and from observation of the literature. 
 
 In the current study, we test which claims about MS/MA licensing previously made on the basis of a few hand-selected or artificially constructed examples generalize to thousands of naturally occurring \whqs$\!$. We operationalize the availability of MS and MA interpretations via the acceptability of question paraphrases elicited in a paraphrase rating task. Experiments 1 tested root (Experiment 1a) and embedded (Experiment 1b) \whqs in their immediately preceding discourse context (Section XX). We find that some but not all predictions from the literature are borne out, and in particular we find no overwhelming MA bias, but we do find modulation of interpretation based on both Wh-word and modality, and matrix verb to some extent. In section XXX we present a second set of studies (Experiments 2a and 2b), using the same stimuli and task as the first two experiments. Crucially, in these studies we presented participants with target questions \emph{without} their discourse contexts. Surprisingly, and in stark contrast to the literature predictions, we find significant bias for MS interpretations, although overall participants were more uncertain about the distributions of question meanings. As for our other factors of interest, we still find effects of wh-word and modality, although to a much lesser degree.
 
@@ -883,14 +886,20 @@ Yes. \figref{ex1b_modXwh} plots mean rating as a function of ModalPresent, Wh-Wo
 \figref{ex1b_matrix_verbs} presents several matrix verbs that are of theoretical interest. Unfortunately, we encounter a sparse data problem for most of these verbs so we focus on \emph{know}. \figref{ex1b_modXwh_know} plots mean rating as a function of Paraphrase, Wh-Word and Modality. We found significant 2-way interactions between Wh-Word and Paraphrase in \emph{know-wh}: a significant MA bias for \emph{know-what} ($\beta$=-.09, $SE$=0.02, $t$=-4.75, $p<$0.0001) and a non-significant MA preference for \emph{know-who} ($\beta$=-.1, $SE$=0.06, $t$=-1.77, $p$=0.09), while a signfifcant MS bias for \emph{know-how} ($\beta$=.08, $SE$=.02, $t$=4.12, $p<$0.0001) and \emph{know-when} ($\beta$=0.22, $SE$=0.09, $t$=2.41, $p<$0.05), and non-significant MS preference for \emph{know-where}, \emph{know-why}.
 
 The addition of a modal either reversed an MA bias (\emph{what}: $\beta$=0.12, $SE$=0.04, $t$=2.74, $p<$0.007) or strengthed the MS bias (\emph{know}: $\beta$=0.01, $SE$=0.03, $t$=2.93, $p<$0.005, \emph{where}: $\beta$=0.26, $SE$=0.01, $t$=2.58, $p<$0.03, \emph{why}: $\beta$=0.19, $SE$=0.07, $t$=2.49, $p<$0.02). However, there was no effect of modal for \emph{know-who}, \emph{know-when} questions.
-
+\mm{better to show most frequen or the theoretically interesting verbs?}
 \begin{figure}[h!]
 \centering
-\includegraphics[scale=.6]{figures/matrixverbs_threotical_context.pdf}
-\caption{Mean ratings by paraphrase for several Matrix Verbs that have been of interest in the theoretical literature, in Experiment 1b. Error bars indicate 95\% bootstrapped confidence intervals.} 
+\includegraphics[scale=.6]{figures/matrixverbs_frequent_context.pdf}
+\caption{Mean ratings by paraphrase for the most frequent Matrix Verbs in the corpus, in Experiment 1b. Error bars indicate 95\% bootstrapped confidence intervals.}
 \label{ex1b_matrix_verbs}
 \end{figure}
 
+% \begin{figure}[h!]
+% \centering
+% \includegraphics[scale=.6]{figures/matrixverbs_threotical_context.pdf}
+% \caption{Mean ratings by paraphrase for several Matrix Verbs that have been of interest in the theoretical literature, in Experiment 1b. Error bars indicate 95\% bootstrapped confidence intervals.}
+% \label{ex1b_matrix_verbs}
+% \end{figure}
 
 \begin{figure}[h!]
 \centering
@@ -899,16 +908,80 @@ The addition of a modal either reversed an MA bias (\emph{what}: $\beta$=0.12, $
 \label{ex1b_modXwh_know}
 \end{figure}
 
+\mm{FINISH WITH THE MODEL RESULTS HERE}
+When we run our submodels for \emph{know-wh} questions, we find the following.
+for 
+\emph{what}
+\emph{how}
+\emph{where}
+\emph{why}
+\emph{who}
+\emph{when}
+
+% know-what
+% Fixed effects:
+%                             Estimate Std. Error         df t value Pr(>|t|)    
+% (Intercept)                 0.241380   0.006988 225.457205  34.542  < 2e-16 ***
+% cModalPresent               0.070529   0.017481 201.270843   4.035 7.77e-05 ***
+% cParaphrase                -0.089529   0.018838 282.937802  -4.753 3.20e-06 ***
+% cModalPresent:cParaphrase   0.122362   0.044709 206.403867   2.737  0.00674 ** 
+
+% know-how
+% Fixed effects:
+%                           Estimate Std. Error        df t value Pr(>|t|)    
+% (Intercept)               1.997e-01  9.218e-03 9.423e+01  21.661  < 2e-16 ***
+% cModalPresent             2.108e-02  1.838e-02 8.603e+01   1.147  0.25448    
+% cParaphrase               7.733e-02  1.878e-02 1.197e+02   4.117 7.09e-05 ***
+% cModalPresent:cParaphrase 1.021e-01  3.479e-02 8.192e+01   2.934  0.00434 ** 
+
+
+% know-where
+% Fixed effects:
+%                           Estimate Std. Error      df t value Pr(>|t|)    
+% (Intercept)                0.20164    0.03008 9.06101   6.702 8.55e-05 ***
+% cModalPresent              0.08485    0.06032 9.00221   1.407    0.193    
+% cParaphrase                0.07640    0.05132 9.97173   1.489    0.167    
+% cModalPresent:cParaphrase  0.25842    0.10032 8.94475   2.576    0.030 *  
+
+% know-why
+% Fixed effects:
+%                           Estimate Std. Error        df t value Pr(>|t|)    
+% (Intercept)                 0.19224    0.01681  12.10933  11.438 7.53e-08 ***
+% cModalPresent               0.14092    0.04859  12.69396   2.900   0.0127 *  
+% cParaphrase                 0.01312    0.02845 142.99372   0.461   0.6455    
+% cModalPresent:cParaphrase   0.18608    0.07459 154.29781   2.495   0.0137 *  
+
+
+% know-who
+% ixed effects:
+%                           Estimate Std. Error       df t value Pr(>|t|)    
+% (Intercept)                0.23210    0.03282 22.98276   7.071 3.34e-07 ***
+% cModalPresent              0.06052    0.10095 22.93404   0.600   0.5547    
+% cParaphrase               -0.10239    0.05800 23.59378  -1.765   0.0904 .  
+% cModalPresent:cParaphrase  0.07847    0.17624 22.41251   0.445   0.6604    
+
+% know-when
+% Fixed effects:
+%                           Estimate Std. Error      df t value Pr(>|t|)    
+% (Intercept)                0.32776    0.03371 6.78582   9.724 3.15e-05 ***
+% cModalPresent              0.02579    0.07143 6.76265   0.361   0.7291    
+% cParaphrase                0.22488    0.09333 7.02033   2.409   0.0467 *  
+% cModalPresent:cParaphrase  0.12304    0.19789 7.00720   0.622   0.5538    
+
+
 \subsection{Discussion}
 
 Given our results, we conclude that indeed the MS reading of \emph{wh}-questions is modulated by various linguistic factors. Figure \figref{exs1_density} plots the distribution of mean ratings by item and by linguistic factors. As is clear from the plots, there is immese variation in interpretation.
 
 \begin{figure}[h!]
 \centering
-\includegraphics[scale=1]{figures/denisty_context_ratings.pdf}
+\includegraphics[scale=1]{figures/denisty_mean_ratings_context.pdf}
 \caption{Mean ratings by item for \emph{a}- and \emph{every}-paraphrases, across Experiments 1a and 1b.} 
 \label{exs1_density}
 \end{figure}
+
+
+
 
 
 % \begin{figure}[h!]
@@ -918,9 +991,31 @@ Given our results, we conclude that indeed the MS reading of \emph{wh}-questions
 % \label{exs1_factors_density}
 % \end{figure}
 
-The most robust finding is that the presence of a modal significantly increases ratings for MS than the absence. This effect held even though we grouped both necessity and possibility modals together. Looking more deeply at the distribution of readings with particular modals, \mm{add some discussion about modality here, possibility versus necessisity}
+The most robust finding is that the presence of a modal significantly increases ratings for MS than the absence. We coded simply for presence versus absense of modality as a factor without differentiating between modal flavor or force. We found influence of modality even without a more fine-graned distinction. However, the literature focuses on the auxiliary \emph{can} as an existential possibility modal (\cite{george2011,fox2014,nicolae2014,xiang2016}\mm{more recent papers fox2018,xiang 2020}), and other modals are not discussed. By attributing the modal effect to existential possibility permits us to reduce the mention-some phenomenon to sometime existential (for, though we didn't discuss in detail, recall from section \mm{XX} that questions with existential quantification give rise to MS). This alignment also predicts that existential modals will give rise to MS. Is this indeed the case? \citeA{dayal2016} (section 2.3) concludes that in fact rather than existential force, a priority modal flavor (a term from \citeA{portner2009}) is what drives MS. Priority flavor refers to necessary or possible ways of achieving a goal or priority that is set by context. They have a circumstantial modal base and an ordering source, both of which are determined by the context.
+% Discussion of dayal's examples?
+% Dayal poses two questions 
+
+What we would predict in our data is the following. On the hypothesis that MS is linked to existential or possibility modality, then we should find higher ratings for \emph{a} than \emph{every} for \emph{might}, \emph{may} in addition to \emph{can} and \emph{could}; while universal or necessity modals like \emph{should}, \emph{shall}, \emph{must}, \emph{ought} should show the reverse pattern, \emph{every} ratings should be higher than \emph{a} ratings. In contrast, if the priority flavor of the modal is relevant, then quantificational force won't be the deciding factor. Thus, if the contextual goals support a mention-some priority or goal, we should get a mention-some reading even in universal or necessissity modal questions.
+
+Turning to the current data, figure \ref{exs1_modals} breaks down our results by modal auxiliary (note, we include here the category 'nonfinite' because non-finite embedded clauses have long been analyzed as containing covert modality \cite{bhatt1999,portner2009}\mm{others?}.
+
+\mm{finish discussion here}
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=1]{figures/modals_context.pdf}
+\caption{Mean ratings by modality across Experiments 1a and 1b.} 
+\label{exs1_modals}
+\end{figure}
+
+Our results seem to show that mention-some acceptability cuts across both force and flavor. First, \emph{a} paraphrases are more acceptable than \emph{every} paraphrases for the epistemic possibility modals \emph{may} and \emph{might}
 
 
+% \begin{figure}[h!]
+% \centering
+% \includegraphics[scale=1]{figures/modals_QT_context.pdf}
+% \caption{Mean ratings by modality broken down by QuestionType. Embedded questions track stimuli used in Experient 1b while root questions track Experiment 1a. The third categor, 'embedded SAI' refers to cases where the \whq involved subject-auxiliary invers (SAI) but was nonetheless embedded syntactically according to the annotation. These would have appeared with the normal embedded stimuli in Experient 1b.} 
+% \label{exs1_modals_QT}
+% \end{figure}
 
 There were some slight differences between the two experiments. While there was no overall MA bias for root questions, there was more of a bias in embedded questions. In both cases, however, ratings were significantly modulated by the Wh-word and the presence of modality. 
 
@@ -1229,6 +1324,7 @@ WHEN & Intercept & .25 & .02 & 10.11 & $<$.0001\\
 \end{figure}
 
 
+
 \figref{ex2b_matrix_verbs} presents several matrix verbs that are of theoretical interest. As in Experiment 1b, we encounter sparse data problems and so focus on \emph{know-wh}. Before turning to those, we observe that with \emph{remember-wh}, 
 
 \figref{ex2b_know_modXwh} presents meaning ratings for \emph{know-wh} questions as a function of paraphrase, Wh-Word and Modality. No \whq showed a bias for MA. Rather we found significant MS bias for \emph{know-how}: $\beta$=.16, $SE$=.02, $t$=8.97, $p<$0.0001 and \emph{know-where}: $\beta$=.12, $SE$=.03, $t$=3.65, $p<$0.0005; and an MS preference for \emph{know-what}, \emph{know-why}, \emph{know-who}, \emph{know-when}. The MS bias significantly increase with modality for \emph{know-what}: $\beta$=.01, $SE$=.04, $t$=3.19, $p<$0.002; \emph{know-how} $\beta$=.1, $SE$=.03, $t$=3.07, $p<$0.003, and \emph{know-where} $\beta$=.14, $SE$=.06, $t$=2.18, $p<$0.04, but not \emph{know-why}, \emph{know-who}, \emph{know-when}.
@@ -1252,7 +1348,20 @@ WHEN & Intercept & .25 & .02 & 10.11 & $<$.0001\\
 \subsection{Discussion}
 We found that with the preceeding context removed, both root and embedded \whqs actually showed more bias for MS paraphrases than we expected. Theories which argue that only MS is context dependent would predict that MS readings should decrease without the proper contextual support. 
 
-We still found interactions due to the lingusitic form of the question, although there were less robust effects of Modal present, as well as differences due to whether it was the root or the embedded task. For embedded \emph{what}-questions alone the presence of a modal reversed a non-significant MA bias, but there were no higher effects with root questions. For \emph{how}-questions, both root and embedded questions pattern together by exhibiting an MS bias that is strengthened by a modal. \emph{Where} and \emph{why}-questions patterned together: for root questions, there was significant MS bias but no influence of modality; for embedded questions the modal did signfifcantly increase the already significant MS bias. For root \emph{who}-questions there was only a significant interaction which raised MS ratings in the presence of modality; for embedded questions, there was significant bias for MS ratings but no effect of or interaction with modality. Finally, \emph{when}-questions showed no interactions between Paraphrase and ModalPresent, but significant positive biases for \emph{a}-paraphrases. Only with Root questions did modality boost MS.
+We still found interactions due to the lingusitic form of the question, although there were less robust effects of ModalPresent, as well as differences due to whether it was the root or the embedded task. For embedded \emph{what}-questions alone the presence of a modal reversed a non-significant MA bias, but there were no higher effects with root questions. For \emph{how}-questions, both root and e732 sw09mbedded questions pattern together by exhibiting an MS bias that is strengthened by a modal. \emph{Where} and \emph{why}-questions patterned together: for root questions, there was significant MS bias but no influence of modality; for embedded questions the modal did signfifcantly increase the already significant MS bias. For root \emph{who}-questions there was only a significant interaction which raised MS ratings in the presence of modality; for embedded questions, there was significant bias for MS ratings but no effect of or interaction with modality. Finally, \emph{when}-questions showed no interactions between Paraphrase and ModalPresent, but significant positive biases for \emph{a}-paraphrases. Only with Root questions did modality boost MS.
+
+Looking at modals in more fine0-grained detail, figure \ref{exs2_modals} presents the results broken down by individual modals (and non-finite clauses). Except for the modal \emph{may}, each modal here shows higher proportion acceptability for \emph{a} than \emph{every} paraphrases. This result is different from in the Context Task, where there was slightly more variability in whether \emph{a} was rated higher than \emph{every}. Interestingly, the epistemic modal \emph{might} has \emph{a} paraphrases rated highest. \mm{Together, this seems to suggest that MS cuts across modal force and flavor}
+
+
+
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=1]{figures/modals_nocontext.pdf}
+\caption{Mean ratings by modality across Experiments 2a and 2b.} 
+\label{exs2_modals}
+\end{figure}
+
+
 
 
 
@@ -1268,7 +1377,6 @@ It is also possible participants will be overall more uncertaint about the inten
 
 \subsection{Qualitative discussion of examples}
 
-We subtracted, for each item and paraphrase, the rating in the Context Task from the rating in the NoContext Task. In this section, we discuss some specific examples to help us understand what the effect of context is. 
 
 \subsubsection{Cases with a big difference between the two studies}
 
@@ -1601,7 +1709,7 @@ We can see these differences from a slightly different angle in \figref{density_
 \begin{figure}[h!]
 \centering
 \centering
-\includegraphics[scale=1]{figures/denisty_context_ratings.pdf}
+% \includegraphics[scale=1]{figures/denisty_context_ratings.pdf}
 \caption{Mean ratings by paraphrase comparing Context and NoContext Experiments.}
 \label{density_Task_overall}
 \end{figure}
@@ -1615,7 +1723,7 @@ Analysis were conducted to assess the effect of Task (Context, NoContext) in add
 
 \paragraph{The overall effect of Task on Paraphrase}
 
-Table \ref{sub-model_Task} presents regression results assessing the effect of Context (Task) on \emph{a}- and \emph{every}- paraphrase ratings. We find first that there is a significant initial bias for \emph{a}- over \emph{every}-paraphrases, indicated by the positive oefficient for Paraphrase, and 
+Table \ref{sub-model_Task} presents regression results assessing the effect of Context (Task) on \emph{a}- and \emph{every}- paraphrase ratings. We find first that there is a significant initial bias for \emph{a}- over \emph{every}-paraphrases, indicated by the positive coefficient for Paraphrase, as well as a significant initial bias in the Context over the No Context Task \mm{wait, is this right? because Paraphrase is centered, th}
 
 
 First that there is a significant initial bias for \emph{a}-paraphrases

@@ -227,7 +227,10 @@ d_what_know = d.ms.ma.know %>%
   mutate(cParaphrase = as.numeric(paraphrase.dc)-mean(as.numeric(paraphrase.dc))) %>% 
   droplevels()
 
-m.what.know = lmer(normed_rating ~ cModalPresent*cParaphrase + (1+cParaphrase+cModalPresent|workerid) + (1+cParaphrase|tgrep_id), data=d_what_know) 
+# m.what.know = lmer(normed_rating ~ cModalPresent*cParaphrase + (1+cParaphrase+cModalPresent|workerid) + (1+cParaphrase|tgrep_id), data=d_what_know) 
+# saveRDS(m.what.know, "m-know-what.rds")
+
+m.what.know <- readRDS("m-know-what.rds")
 summary(m.what.know)
 
 # m.what.simple = lmer(normed_rating ~ paraphrase*cModalPresent-cModalPresent + (1+paraphrase+cModalPresent|workerid) + (1+paraphrase|tgrep_id), data=d_what_know)
@@ -242,8 +245,13 @@ d_how_know = d.ms.ma.know %>%
   mutate(cParaphrase = as.numeric(paraphrase.dc)-mean(as.numeric(paraphrase.dc))) %>% 
   droplevels()
 
-m.how.know = lmer(normed_rating ~ cModalPresent*cParaphrase + (1+cParaphrase+cModalPresent|workerid) + (1+cParaphrase|tgrep_id), data=d_how_know) 
+# m.how.know = lmer(normed_rating ~ cModalPresent*cParaphrase + (1+cParaphrase+cModalPresent|workerid) + (1+cParaphrase|tgrep_id), data=d_how_know) 
+# saveRDS(m.how.know, "m-know-how.rds")
+
+m.how.know <- readRDS("m-know-how.rds")
 summary(m.how.know)
+
+
 
 # m.how.simple = lmer(normed_rating ~ paraphrase*cModalPresent-cModalPresent + (1+paraphrase|tgrep_id), data=d_how) 
 # summary(m.how.simple)
@@ -257,7 +265,10 @@ d_where_know = d.ms.ma.know %>%
   mutate(cParaphrase = as.numeric(paraphrase.dc)-mean(as.numeric(paraphrase.dc))) %>% 
   droplevels()
 
-m.where.know = lmer(normed_rating ~ cModalPresent*cParaphrase + (1+cParaphrase|workerid) + (1+cParaphrase|tgrep_id), data=d_where_know) 
+# m.where.know = lmer(normed_rating ~ cModalPresent*cParaphrase + (1+cParaphrase|workerid) + (1+cParaphrase|tgrep_id), data=d_where_know) 
+# saveRDS(m.where.know, "m-know-where.rds")
+
+m.where.know <- readRDS("m-know-where.rds")
 summary(m.where.know)
 
 # m.where.simple = lmer(normed_rating ~ cParaphrase*cModalPresent-cModalPresent + (1+cParaphrase+cModalPresent|workerid) + (1+cParaphrase|tgrep_id), data=d_where) 
@@ -272,7 +283,10 @@ d_why_know = d.ms.ma.know %>%
   mutate(cParaphrase = as.numeric(paraphrase.dc)-mean(as.numeric(paraphrase.dc))) %>% 
   droplevels()
 
-m.why.know = lmer(normed_rating ~ cModalPresent*cParaphrase + (1+cParaphrase|workerid) + (1+cParaphrase|tgrep_id), data=d_why_know) 
+# m.why.know = lmer(normed_rating ~ cModalPresent*cParaphrase + (1+cParaphrase|workerid) + (1+cParaphrase|tgrep_id), data=d_why_know) 
+# saveRDS(m.why.know, "m-know-why.rds")
+
+m.why.know <- readRDS("m-know-why.rds")
 summary(m.why.know)
 
 # m.why.simple = lmer(normed_rating ~ cParaphrase*cModalPresent-cModalPresent + (1+cParaphrase+cModalPresent|workerid) + (1+cParaphrase|tgrep_id), data=d_why) 
@@ -287,7 +301,10 @@ d_who_know = d.ms.ma.know %>%
   mutate(cParaphrase = as.numeric(paraphrase.dc)-mean(as.numeric(paraphrase.dc))) %>% 
   droplevels()
 
-m.who.know = lmer(normed_rating ~ cModalPresent*cParaphrase + (1+cParaphrase|workerid) + (1+cParaphrase|tgrep_id), data=d_who_know) 
+# m.who.know = lmer(normed_rating ~ cModalPresent*cParaphrase + (1+cParaphrase|workerid) + (1+cParaphrase|tgrep_id), data=d_who_know) 
+# saveRDS(m.who.know, "m-know-who.rds")
+
+m.who.know <- readRDS("m-know-who.rds")
 summary(m.who.know)
 
 # m.who.simple = lmer(normed_rating ~ cParaphrase*cModalPresent-cModalPresent + (1+cParaphrase|workerid) + (1+cParaphrase|tgrep_id), data=d_who) 
@@ -303,7 +320,10 @@ d_when_know = d.ms.ma.know %>%
   mutate(cParaphrase = as.numeric(paraphrase.dc)-mean(as.numeric(paraphrase.dc))) %>% 
   droplevels()
 
-m.when.know = lmer(normed_rating ~ cModalPresent*cParaphrase + (1+cParaphrase|tgrep_id), data=d_when_know) 
+# m.when.know = lmer(normed_rating ~ cModalPresent*cParaphrase + (1+cParaphrase|tgrep_id), data=d_when_know) 
+# saveRDS(m.when.know, "m-know-when.rds")
+
+m.when.know <- readRDS("m-know-when.rds")
 summary(m.when.know)
 
 # simple effects
