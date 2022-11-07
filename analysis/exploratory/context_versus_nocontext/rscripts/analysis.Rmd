@@ -86,7 +86,7 @@ d.ms.ma$paraphrase.dc <- as.factor(d.ms.ma$paraphrase.dc)
 contrasts(d.ms.ma$paraphrase.dc)
 contrasts(d.ms.ma$Task)
 
-View(d.ms.ma)
+# View(d.ms.ma)
 contrasts(d.ms.ma$Wh)
 ```
 
@@ -99,6 +99,31 @@ m.ms.ma.full <- readRDS("../models/model-task-para.rds")
 summary(m.ms.ma.full)
 
 ```
+
+# Is there an interaction between Paraphrase, Task AND WH?
+## 
+
+```{r}
+
+# m.ms.ma.full.Wh = lmer(normed_rating ~ Wh*cTask + (1+Wh|workerid) + (1+Wh+cTask|tgrep_id), data=d.ms.ma)
+# saveRDS(m.ms.ma.full.Wh, "../models/model-task-wh.rds")
+
+m.ms.ma.full.Wh <- readRDS("../models/model-task-wh.rds")
+summary(m.ms.ma.full.Wh)
+
+```
+
+## and paraphrase?
+```{r}
+
+# m.ms.ma.full.Wh.three = lmer(normed_rating ~ Wh*cParaphrase*cTask + (1+Wh+cParaphrase|workerid) + (1+Wh+cParaphrase+cTask|tgrep_id), data=d.ms.ma)
+# saveRDS(m.ms.ma.full.Wh.three, "../models/model-task-para-wh.rds")
+
+m.ms.ma.full.Wh.three <- readRDS("../models/model-task-para.rds")
+summary(m.ms.ma.full.Wh.three)
+
+```
+
 
 
 # Split models up by paraphrase
