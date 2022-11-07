@@ -149,17 +149,50 @@ agr <- kls.factors %>%
 # Re-Order the WH-levels by overall composition of DB
 agr$Wh <- factor(agr$Wh, levels=c("what","how","where","why","who","when"))
 
-ggplot(data = agr, aes(x = Task, y=mean_kld, fill=ModalPresent)) +
+dodge = position_dodge(.9)
+ggplot(data = agr, aes(x = Task, y=mean_kld, alpha=ModalPresent, fill=Task)) +
   geom_bar(position="dodge",stat="identity") +
   geom_errorbar(aes(ymin=YMin,ymax=YMax),
                 width=.25,
                 position="dodge", 
                 show.legend = FALSE) +
   facet_wrap(~Wh,ncol=2) +
+  guides(fill=FALSE) +
+  guides(alpha=guide_legend(title="Modal present")) +
+  theme(legend.key.size = unit(0.3, "cm"),
+        legend.position = "top", # c(.5,1)
+        legend.direction = "horizontal",
+        legend.margin=margin(0,0,0,0),
+        legend.box.margin=margin(0,0,-5,-5),legend.spacing.y = unit(0.001, 'cm')) +
   scale_fill_manual(values=cbPalette) +
   scale_color_manual(values=cbPalette) +
   scale_alpha_discrete(range = c(.5,1))
-# ggsave("graphs/denisty_kld_context_factors.pdf",width=6,height=6)
+
+ggsave("../graphs/bar_kld_context_factors.pdf",width=5,height=6)
+```
+
+
+```{r}
+dodge = position_dodge(.9)
+ggplot(data = agr, aes(x = Wh, y=mean_kld, alpha=Task, fill=Wh)) +
+  geom_bar(position="dodge",stat="identity") +
+  geom_errorbar(aes(ymin=YMin,ymax=YMax),
+                width=.25,
+                position="dodge", 
+                show.legend = FALSE) +
+  facet_wrap(~ModalPresent,ncol=2) +
+  guides(fill=FALSE) +
+  guides(alpha=guide_legend(title="Task")) +
+  theme(legend.key.size = unit(0.3, "cm"),
+        legend.position = "top", # c(.5,1)
+        legend.direction = "horizontal",
+        legend.margin=margin(0,0,0,0),
+        legend.box.margin=margin(0,0,-5,-5),legend.spacing.y = unit(0.001, 'cm')) +
+  # scale_fill_manual(values=cbPalette) +
+  # scale_color_manual(values=cbPalette) +
+  scale_alpha_discrete(range = c(.5,1))
+# ggsave("../graphs/bar_kld_context_factors_wh.pdf",width=6,height=3)
+
 ```
 
 
@@ -214,5 +247,28 @@ ggplot(d.kls, aes(x=Fitted,y=kld)) +
 cor(d.kls$Fitted,d.kls$kld)
 ```
 
+## Interactions?
+```{r}
+# just recode the factors so that negative values are nocontext and positive values are context
+kls.factors$Task <- as.factor(kls.factors$Task)
+kls.factors$tgrep_id = as.factor(kls.factors$tgrep_id)
+kls.factors$ModalPresent = as.factor(kls.factors$ModalPresent)
+kls.factors$Wh = as.factor(kls.factors$Wh)
+
+View(kls.factors)
+
+d.kls.centered <- kls.factors %>% 
+  mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>% 
+  mutate(Task <- recode_factor(Task, context=1, nocontext=0)) %>%
+  mutate(cTask = as.numeric(Task) - mean(as.numeric(Task))) %>% 
+  droplevels()
+
+contrasts(d.kls.centered$Wh) = cbind("how.vs.when"=c(0,1,0,0,0,0),"what.vs.when"=c(1,0,0,0,0,0),
+                "where.vs.when"=c(0,0,0,1,0,0),"who.vs.when"=c(0,0,0,0,1,0),
+                "why.vs.when"=c(0,0,0,0,0,1))
+
+m.kld.full <- lmer(kld~cTask*Wh*cModalPresent + (1|tgrep_id), data=d.kls.centered)
+summary(m.kld.full)
+```
 
 
