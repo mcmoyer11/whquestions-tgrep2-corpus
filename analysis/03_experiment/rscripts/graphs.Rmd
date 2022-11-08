@@ -1,5 +1,5 @@
 ---
-title: "Pre-processing Data from Experiment 02, Root Questions Corpus Study"
+title: "Graphs for Experiment 1a, Root Questions Context Corpus Study"
 author: Morgan Moyer
 date: March 22, 2021
 output: html_document
@@ -41,7 +41,13 @@ d <- left_join(d, corp_match, by="tgrep_id")
 ```{r}
 agr = d %>%
   group_by(tgrep_id,paraphrase) %>%
-  summarize(mean_rating = mean(normed_rating),sd = sd(normed_rating))
+  summarize(mean_rating = mean(normed_rating),sd = sd(normed_rating)) %>% 
+  summarize(CILow = ci.low(normed_rating), CIHigh = ci.high(normed_rating)) %>%
+  mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
+  drop_na()
+
+agr$YMin <- agr$mean_rating - ci.low(agr$mean_rating)
+agr$YMax <- agr$mean_rating + ci.high(agr$mean_rating)
 ```
 
 
@@ -55,6 +61,29 @@ ggplot(data = agr, aes(x = mean_rating, fill=paraphrase, color=paraphrase)) +
   scale_color_manual(values=cbPalette)
 # ggsave("../graphs/ex1a_denisty_mean_ratings.pdf",width=6,height=3)
 ```
+
+```{r}
+ggplot(agr,aes(x=mean_rating,fill=paraphrase,color=paraphrase)) +
+  geom_histogram(alpha = .4) +
+  scale_fill_manual(values=cbPalette) +
+  scale_color_manual(values=cbPalette)
+  scale_x_continuous(name="Mean by-item paraphrase rating") 
+
+```
+
+
+
+```{r}
+ggplot(agr, aes(x=paraphrase, y=mean_rating,fill=paraphrase, color=paraphrase)) + 
+    geom_violin(trim=FALSE,alpha=.4) +
+    geom_jitter(shape=16, position=position_jitter(0.2)) +
+    geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position="dodge", show.legend = FALSE) +
+  ylim(0,1) +
+  scale_fill_manual(values=cbPalette) +
+  scale_color_manual(values=cbPalette)
+# ggsave("../graphs/1a_violin.pdf",width=6,height=4)
+```
+
 
 ## Standard Deviation
 ```{r, warning=FALSE, echo=FALSE, message=FALSE}
