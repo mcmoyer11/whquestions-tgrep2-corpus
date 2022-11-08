@@ -272,8 +272,10 @@ ggplot(agr,aes(x=paraphrase, y=mean_rating, fill=paraphrase)) +
   theme(legend.position = "none") +
   scale_fill_manual(values=cbPalette) +
   scale_color_manual(values=cbPalette)
-# ggsave("../graphs/test_overall.pdf")
+# ggsave("../graphs/overall_raw.pdf",width=3.5,height=3)
+```
 
+```{r}
 agr = test %>%
   group_by(Wh,ModalPresent,paraphrase) %>%
   summarize(mean_rating = mean(rating), CILow = ci.low(rating), CIHigh = ci.high(rating)) %>%

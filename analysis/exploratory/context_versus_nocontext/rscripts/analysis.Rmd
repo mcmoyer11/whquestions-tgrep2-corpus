@@ -119,7 +119,7 @@ summary(m.ms.ma.full.Wh)
 # m.ms.ma.full.Wh.three = lmer(normed_rating ~ Wh*cParaphrase*cTask + (1+Wh+cParaphrase|workerid) + (1+Wh+cParaphrase+cTask|tgrep_id), data=d.ms.ma)
 # saveRDS(m.ms.ma.full.Wh.three, "../models/model-task-para-wh.rds")
 
-m.ms.ma.full.Wh.three <- readRDS("../models/model-task-para.rds")
+m.ms.ma.full.Wh.three <- readRDS("../models/model-task-para-wh.rds")
 summary(m.ms.ma.full.Wh.three)
 
 ```

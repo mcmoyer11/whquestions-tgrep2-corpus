@@ -278,8 +278,10 @@ ggplot(agr,aes(x=paraphrase, y=mean_rating, fill=paraphrase)) +
   theme(legend.position = "none") +
   scale_fill_manual(values=cbPalette) +
   scale_color_manual(values=cbPalette)
-# ggsave("../graphs/test_everything.pdf")
+# ggsave("../graphs/2a_overall_raw.pdf",width=3.5,height=3)
+```
 
+```{r]}
 
 agr = test %>%
   group_by(Wh,ModalPresent,paraphrase) %>%
