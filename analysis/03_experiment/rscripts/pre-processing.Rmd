@@ -1,5 +1,5 @@
 ---
-title: "Pre-processing Data from Root Questions Corpus Study"
+title: "Experiment 1a (Root Questions in Context): Pre-processing"
 author: Morgan Moyer
 date: March 22, 2021
 output: html_document
@@ -226,7 +226,7 @@ failed_controls = con %>%
   filter(sum_control_passed < 4)
 
 length(unique(failed_controls$workerid)) # 35
-length(unique(failed_controls$workerid))/length(unique(d$workerid))*100 # 5.3%
+length(unique(failed_controls$workerid))/length(unique(d$workerid))*100 # 5.5%
 ```
 
 # Focus on Test Items
@@ -252,6 +252,9 @@ agr = test %>%
   mutate(mean_rating = mean(rating))
 
 nrow(test) #71980
+
+# How many test items?
+length(unique(test$tgrep_id)) # 995
 ```
 
 ## Graph raw test items
@@ -262,6 +265,9 @@ agr = test %>%
   summarize(mean_rating = mean(rating), CILow = ci.low(rating), CIHigh = ci.high(rating)) %>%
   mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
   drop_na()
+
+# Re-Order the paraphrase levels so 'the' is green
+agr$paraphrase <- factor(agr$paraphrase, levels=c("a","every","the","other"))
 
 ggplot(agr,aes(x=paraphrase, y=mean_rating, fill=paraphrase)) +
   geom_bar(position="dodge",stat="identity") +
@@ -281,6 +287,8 @@ agr = test %>%
   summarize(mean_rating = mean(rating), CILow = ci.low(rating), CIHigh = ci.high(rating)) %>%
   mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
   drop_na()
+# Re-Order the paraphrase levels so 'the' is green
+agr$paraphrase <- factor(agr$paraphrase, levels=c("a","every","the","other"))
 
 ggplot(agr,aes(x=paraphrase, y=mean_rating, fill=ModalPresent)) +
   geom_bar(position="dodge",stat="identity") +
@@ -291,6 +299,52 @@ ggplot(agr,aes(x=paraphrase, y=mean_rating, fill=ModalPresent)) +
 # ggsave("../graphs/test_ModxWh.pdf")
 
 ```
+
+# Violin plot
+```{r}
+agr = test %>%
+  group_by(tgrep_id,paraphrase) %>%
+  summarize(mean_rating = mean(rating), CILow = ci.low(rating), CIHigh = ci.high(rating)) %>%
+  mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
+  drop_na()
+# Re-Order the paraphrase levels so 'the' is green
+agr$paraphrase <- factor(agr$paraphrase, levels=c("a","every","the","other"))
+
+
+data_summary <- function(x) {
+   m <- mean(x)
+   ymin <- m-sd(x)
+   ymax <- m+sd(x)
+   return(c(y=m,ymin=ymin,ymax=ymax))
+}
+
+```
+
+```{r}
+ggplot(agr, aes(x=paraphrase, y=mean_rating,fill=paraphrase, color=paraphrase)) + 
+    geom_violin(trim=FALSE,alpha=.4) +
+    # geom_jitter(shape=16, position=position_jitter(0.2)) +
+    # geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position="dodge", show.legend = FALSE) +
+  ylim(0,1) +
+  scale_fill_manual(values=cbPalette) +
+  scale_color_manual(values=cbPalette)
+# ggsave("../graphs/1a_violin-raw.pdf",width=4,height=2)
+```
+
+```{r}
+ggplot(agr, aes(x=paraphrase, y=mean_rating,fill=paraphrase, color=paraphrase)) + 
+  geom_violin(trim=FALSE,alpha=.4) +  
+  geom_dotplot(binaxis='y', stackdir='center',stackratio=1, dotsize=1.2) +
+    stat_summary(fun=data_summary, geom="point", shape=18,
+                 size=3, color="red") +
+    # geom_jitter(shape=16, position=position_jitter(0.2)) +
+    # geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position="dodge", show.legend = FALSE) +
+  ylim(0,1) +
+  scale_fill_manual(values=cbPalette) +
+  scale_color_manual(values=cbPalette)
+# ggsave("../graphs/1a_violin.pdf",width=4,height=2)
+```
+
 
 # Remove Rhetorical Questions
 ```{r Remove rhetorical questions}
@@ -317,6 +371,10 @@ test_other = test %>%
 test_norm = test %>%
   filter(!tgrep_id %in% or_ids)
 nrow(test_norm)/nrow(test)*100 # 84.8%
+
+# How many remaining?
+length(unique(test_norm$tgrep_id)) # 838
+
 
 nrow(test_norm) # 60744
 

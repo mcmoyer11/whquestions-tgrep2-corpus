@@ -42,8 +42,8 @@ d <- left_join(d, corp_match, by="tgrep_id")
 agr = d %>%
   group_by(tgrep_id,paraphrase) %>%
   summarize(mean_rating = mean(normed_rating),sd = sd(normed_rating)) %>% 
-  summarize(CILow = ci.low(normed_rating), CIHigh = ci.high(normed_rating)) %>%
-  mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
+  # summarize(CILow = ci.low(normed_rating), CIHigh = ci.high(normed_rating)) %>%
+  # mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
   drop_na()
 
 agr$YMin <- agr$mean_rating - ci.low(agr$mean_rating)
@@ -81,7 +81,7 @@ ggplot(agr, aes(x=paraphrase, y=mean_rating,fill=paraphrase, color=paraphrase)) 
   ylim(0,1) +
   scale_fill_manual(values=cbPalette) +
   scale_color_manual(values=cbPalette)
-# ggsave("../graphs/1a_violin.pdf",width=6,height=4)
+# ggsave("../graphs/1a_violin.pdf",width=4,height=2)
 ```
 
 
