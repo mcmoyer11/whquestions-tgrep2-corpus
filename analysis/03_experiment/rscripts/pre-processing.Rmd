@@ -11,6 +11,7 @@ library(lme4)
 library(lmerTest)
 library(multcomp) # not available for this version of R
 library(tidyverse)
+# library(Hmisc)
 theme_set(theme_bw())
 cbPalette <- c("#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73")
 this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
@@ -69,7 +70,7 @@ d <- d %>%
 
 # 25 participants removed for reporting non-english native language
 nrow(d) # 107868
-length(unique(d$workerid)) # 632
+length(unique(d$workerid)) # 632 
 ```
 
 ```{r comments and demographic information, eval=FALSE, include=FALSE}
@@ -226,7 +227,7 @@ failed_controls = con %>%
   filter(sum_control_passed < 4)
 
 length(unique(failed_controls$workerid)) # 35
-length(unique(failed_controls$workerid))/length(unique(d$workerid))*100 # 5.5%
+length(unique(failed_controls$workerid))/length(unique(d$workerid))*100 # 3.5%
 ```
 
 # Focus on Test Items
@@ -296,7 +297,7 @@ ggplot(agr,aes(x=paraphrase, y=mean_rating, fill=ModalPresent)) +
   facet_wrap(~Wh) +
   scale_fill_manual(values=cbPalette) +
   scale_color_manual(values=cbPalette)
-# ggsave("../graphs/test_ModxWh.pdf")
+# ggsave("../graphs/test_ModxWh-raw.pdf")
 
 ```
 
@@ -309,14 +310,6 @@ agr = test %>%
   drop_na()
 # Re-Order the paraphrase levels so 'the' is green
 agr$paraphrase <- factor(agr$paraphrase, levels=c("a","every","the","other"))
-
-
-data_summary <- function(x) {
-   m <- mean(x)
-   ymin <- m-sd(x)
-   ymax <- m+sd(x)
-   return(c(y=m,ymin=ymin,ymax=ymax))
-}
 
 ```
 
@@ -332,13 +325,32 @@ ggplot(agr, aes(x=paraphrase, y=mean_rating,fill=paraphrase, color=paraphrase)) 
 ```
 
 ```{r}
+
+data_summary <- function(x) {
+   m <- mean(x)
+   ymin <- m-ci.low(m)
+   ymax <- m+ci.high(m)
+   return(c(y=m,ymin=ymin,ymax=ymax))
+}
+
+data_summary(agr)
+
+sum <- agr %>% 
+  group_by(paraphrase) %>% 
+  summarize(GrandMean = mean(mean_rating), CILow = ci.low(mean_rating), CIHigh = ci.high(mean_rating)) %>%
+  mutate(YMin = GrandMean - CILow, YMax = GrandMean + CIHigh) %>%
+  drop_na()
+  
+View(sum)
+
 ggplot(agr, aes(x=paraphrase, y=mean_rating,fill=paraphrase, color=paraphrase)) + 
   geom_violin(trim=FALSE,alpha=.4) +  
-  geom_dotplot(binaxis='y', stackdir='center',stackratio=1, dotsize=1.2) +
-    stat_summary(fun=data_summary, geom="point", shape=18,
-                 size=3, color="red") +
+  # geom_dotplot(binaxis='y', stackdir='center',stackratio=1, dotsize=1) +
+  # stat_summary(fun.data = sum, geom="point", size=3) +
+  stat_summary(fun.data = "mean_cl_boot", geom = "pointrange",
+                width = 0.2) +
     # geom_jitter(shape=16, position=position_jitter(0.2)) +
-    # geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position="dodge", show.legend = FALSE) +
+  # geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position="dodge", show.legend = FALSE) +
   ylim(0,1) +
   scale_fill_manual(values=cbPalette) +
   scale_color_manual(values=cbPalette)
