@@ -11,7 +11,7 @@ library(lme4)
 library(lmerTest)
 library(multcomp) # not available for this version of R
 library(tidyverse)
-# library(Hmisc)
+library(Hmisc)
 theme_set(theme_bw())
 cbPalette <- c("#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73")
 this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
@@ -314,17 +314,7 @@ agr$paraphrase <- factor(agr$paraphrase, levels=c("a","every","the","other"))
 ```
 
 ```{r}
-ggplot(agr, aes(x=paraphrase, y=mean_rating,fill=paraphrase, color=paraphrase)) + 
-    geom_violin(trim=FALSE,alpha=.4) +
-    # geom_jitter(shape=16, position=position_jitter(0.2)) +
-    # geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position="dodge", show.legend = FALSE) +
-  ylim(0,1) +
-  scale_fill_manual(values=cbPalette) +
-  scale_color_manual(values=cbPalette)
-# ggsave("../graphs/1a_violin-raw.pdf",width=4,height=2)
-```
 
-```{r}
 
 data_summary <- function(x) {
    m <- mean(x)
@@ -333,7 +323,26 @@ data_summary <- function(x) {
    return(c(y=m,ymin=ymin,ymax=ymax))
 }
 
-data_summary(agr)
+stat_sum_df <- function(fun, geom="crossbar", ...) {
+  stat_summary(fun.data = fun, geom = geom, width = 0.2, ...)
+}
+
+ggplot(agr, aes(x=paraphrase, y=mean_rating,fill=paraphrase, color=paraphrase)) + 
+    geom_violin(trim=FALSE,alpha=.4) +
+    # geom_jitter(shape=16, position=position_jitter(0.2)) +
+    # geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position="dodge", show.legend = FALSE) +
+    stat_summary(fun.data = data_summary, geom = "pointrange",
+                # width = 0.2) +
+  # stat_sum_df("mean_cl_boot", mapping = aes(paraphrase))
+  ylim(0,1) +
+  scale_fill_manual(values=cbPalette) +
+  scale_color_manual(values=cbPalette)
+# ggsave("../graphs/1a_violin-raw.pdf",width=4,height=2)
+```
+
+```{r}
+
+# data_summary(agr)
 
 sum <- agr %>% 
   group_by(paraphrase) %>% 
@@ -341,7 +350,7 @@ sum <- agr %>%
   mutate(YMin = GrandMean - CILow, YMax = GrandMean + CIHigh) %>%
   drop_na()
   
-View(sum)
+# View(sum)
 
 ggplot(agr, aes(x=paraphrase, y=mean_rating,fill=paraphrase, color=paraphrase)) + 
   geom_violin(trim=FALSE,alpha=.4) +  
