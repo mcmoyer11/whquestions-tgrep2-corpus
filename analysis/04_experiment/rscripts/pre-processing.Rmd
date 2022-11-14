@@ -353,6 +353,9 @@ agr = test %>%
   mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
   drop_na()
 
+# Re-Order the paraphrase levels so 'the' is green
+agr$paraphrase <- factor(agr$paraphrase, levels=c("a","every","the","other"))
+
 ggplot(agr,aes(x=paraphrase, y=mean_rating, fill=paraphrase)) +
   geom_bar(position="dodge",stat="identity") +
   geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position="dodge", show.legend = FALSE) +
@@ -362,7 +365,7 @@ ggplot(agr,aes(x=paraphrase, y=mean_rating, fill=paraphrase)) +
   theme(legend.position = "none") +
   scale_fill_manual(values=cbPalette) +
   scale_color_manual(values=cbPalette)
-ggsave("../graphs/overall_raw.pdf",width=3.5,height=3)
+# ggsave("../graphs/1b_overall_raw.pdf",width=3.5,height=3)
 ```
 
 ```{r}

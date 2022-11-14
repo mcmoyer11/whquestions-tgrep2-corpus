@@ -11,7 +11,7 @@ library(lme4)
 library(lmerTest)
 library(multcomp) # not available for this version of R
 library(tidyverse)
-library(Hmisc)
+# library(Hmisc)
 theme_set(theme_bw())
 cbPalette <- c("#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73")
 this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
@@ -279,7 +279,7 @@ ggplot(agr,aes(x=paraphrase, y=mean_rating, fill=paraphrase)) +
   theme(legend.position = "none") +
   scale_fill_manual(values=cbPalette) +
   scale_color_manual(values=cbPalette)
-# ggsave("../graphs/overall_raw.pdf",width=3.5,height=3)
+ggsave("../graphs/1a_overall_raw.pdf",width=3.5,height=3)
 ```
 
 ```{r}

@@ -337,6 +337,9 @@ agr = test %>%
   mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
   drop_na()
 
+# Re-Order the paraphrase levels so 'the' is green
+agr$paraphrase <- factor(agr$paraphrase, levels=c("a","every","the","other"))
+
 ggplot(agr,aes(x=paraphrase, y=mean_rating, fill=paraphrase)) +
   geom_bar(position="dodge",stat="identity") +
   geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position="dodge", show.legend = FALSE) +
@@ -367,6 +370,35 @@ ggplot(agr,aes(x=paraphrase, y=mean_rating, fill=ModalPresent)) +
   scale_fill_manual(values=cbPalette) +
   scale_color_manual(values=cbPalette)
 ```
+
+# Violin plot
+```{r}
+agr = test %>%
+  group_by(tgrep_id, paraphrase) %>%
+  summarize(mean_rating = mean(rating), CILow = ci.low(rating), CIHigh = ci.high(rating)) %>% #
+  mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) %>%
+  drop_na()
+
+# Re-Order the paraphrase levels so 'the' is green
+agr$paraphrase <- factor(agr$paraphrase, levels=c("a","every","the","other"))
+
+grand_mean = test %>%
+  group_by(paraphrase) %>%
+  summarize(mean_rating = mean(rating), CILow = ci.low(rating), CIHigh = ci.high(rating)) %>%
+  mutate(YMin = mean_rating - CILow, YMax = mean_rating + CIHigh) 
+
+ggplot(agr, aes(x=paraphrase, y=mean_rating,fill=paraphrase, color=paraphrase)) +
+    geom_violin(trim=FALSE,alpha=.4) +
+    geom_point(grand_mean, size=3, color="black") +
+    geom_errorbar(grand_mean,aes(ymin=YMin,ymax=YMax),width=.25,position="dodge", show.legend = FALSE) +
+    ylim(0,1) +
+    scale_fill_manual(values=cbPalette) +
+    scale_color_manual(values=cbPalette)
+
+# ggsave("../graphs/1a_violin-raw.pdf",width=4,height=2)
+
+```
+
 
 # Remove Rhetorical Questions
 
