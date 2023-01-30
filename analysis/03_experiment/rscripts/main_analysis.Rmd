@@ -16,7 +16,7 @@ setwd(this.dir)
 source("../../helpers.R")
 
 # set the color palette for color-blind
-cbPalette <- c("#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73")
+cbPalette <- c("#56B4E9", "#D55E00", "#009E73","#999999")
 
 # Read the data in
 d = read.csv("../data/normed.csv")
@@ -28,6 +28,19 @@ d$ModalPresent = as.factor(d$ModalPresent)
 d$Wh = as.factor(d$Wh)
 d$paraphrase = as.factor(d$paraphrase)
 contrasts(d$paraphrase)
+#       every the
+# a         0   0
+# every     1   0
+# the       0   1
+
+contrasts(d$Wh)
+#       what when where who why
+# how      0    0     0   0   0
+# what     1    0     0   0   0
+# when     0    1     0   0   0
+# where    0    0     1   0   0
+# who      0    0     0   1   0
+# why      0    0     0   0   1
 ```
 
 
@@ -42,9 +55,20 @@ d.ms.ma = d %>%
   mutate(cModalPresent = as.numeric(ModalPresent)-mean(as.numeric(ModalPresent))) %>%
   droplevels()
 # Set the reference levels
-contrasts(d.ms.ma$Wh) = cbind("how.vs.when"=c(0,1,0,0,0,0),"what.vs.when"=c(1,0,0,0,0,0),
-                "where.vs.when"=c(0,0,0,1,0,0),"who.vs.when"=c(0,0,0,0,1,0),
-                "why.vs.when"=c(0,0,0,0,0,1))
+contrasts(d.ms.ma$Wh) = cbind("how.vs.when"=c(1,0,0,0,0,0),
+                              "what.vs.when"=c(0,1,0,0,0,0),
+                              "where.vs.when"=c(0,0,0,1,0,0),
+                              "who.vs.when"=c(0,0,0,0,1,0),
+                              "why.vs.when"=c(0,0,0,0,0,1))
+contrasts(d.ms.ma$Wh)
+
+#       how.vs.when what.vs.when where.vs.when who.vs.when why.vs.when
+# how             1            0             0           0           0
+# what            0            1             0           0           0
+# when            0            0             0           0           0
+# where           0            0             1           0           0
+# who             0            0             0           1           0
+# why             0            0             0           0           1
 ```
 
 # Is rating modulared by Paraphrase, Wh and ModalPresent?
